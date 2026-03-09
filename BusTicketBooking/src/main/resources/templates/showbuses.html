@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8" /></head>
+<body>
+
+<div th:fragment="content">
+
+  <style>
+    .buses-header {
+      margin-bottom: 32px;
+    }
+    .buses-header h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(24px, 3vw, 36px);
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .buses-header p {
+      font-size: 14px;
+      color: var(--mid);
+    }
+    .buses-header .count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(200,245,60,0.12);
+      border: 1px solid rgba(200,245,60,0.3);
+      color: #5a7a00;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-top: 10px;
+    }
+
+    /* ── SEARCH BAR ── */
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 11px 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .search-input::placeholder { color: rgba(10,10,15,0.3); }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(200,245,60,0.15);
+    }
+    .search-btn {
+      background: var(--ink);
+      color: #fff;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 11px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .search-btn:hover { background: #1e1e2a; transform: translateY(-1px); }
+
+    /* ── BUS GRID ── */
+    #busCardContainer {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    /* ── BUS CARD ── */
+    .bus-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+      overflow: hidden;
+    }
+    .bus-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--accent);
+      border-radius: 16px 0 0 16px;
+    }
+    .bus-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(10,10,15,0.08);
+      border-color: rgba(200,245,60,0.4);
+    }
+
+    /* Card header */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .bus-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0;
+    }
+    .bus-type-badge {
+      background: var(--ink);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    /* Route */
+    .card-route {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .route-arrow {
+      color: var(--accent);
+      font-size: 18px;
+      line-height: 1;
+    }
+    .card-date {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--mid);
+      background: var(--surface-2);
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    /* Timings row */
+    .card-timings {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 14px;
+      background: var(--surface);
+      border-radius: 10px;
+    }
+    .timing-item {}
+    .timing-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 3px;
+    }
+    .timing-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* Footer */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .meta-item {
+      font-size: 12px;
+      color: var(--mid);
+    }
+    .meta-item span { font-weight: 500; color: var(--ink); }
+
+    .card-price-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .fare {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .fare-sub {
+      font-size: 10px;
+      color: var(--mid);
+      margin-top: 2px;
+    }
+    .btn-book {
+      background: var(--accent);
+      color: var(--ink);
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 9px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
+      white-space: nowrap;
+    }
+    .btn-book:hover {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(200,245,60,0.3);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--mid);
+    }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state h3 { font-family: 'Space Mono', monospace; font-size: 18px; color: var(--ink); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── PAGINATION ── */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .page-btn {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 9px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, transform 0.15s;
+    }
+    .page-btn:hover:not(:disabled) {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+      transform: translateY(-1px);
+    }
+    .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .page-indicator {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      background: var(--surface-2);
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      min-width: 120px;
+      text-align: center;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      #busCardContainer { grid-template-columns: 1fr; }
+      .card-timings { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+
+  <!-- Page Header -->
+  <div class="buses-header">
+    <h1>Available Buses</h1>
+    <p>Find and book your perfect journey across India.</p>
+    <span class="count-badge">
+      🚌 <span id="totalCount">0</span> buses found
+    </span>
+  </div>
+
+  <!-- Search / Filter Bar -->
+  <div class="search-bar">
+    <input type="text" id="searchFrom" class="search-input" placeholder="🏠 From (e.g. Delhi)" oninput="filterCards()" />
+    <input type="text" id="searchTo"   class="search-input" placeholder="📍 To (e.g. Jaipur)"  oninput="filterCards()" />
+    <input type="date"  id="searchDate" class="search-input" style="max-width:180px;" oninput="filterCards()" />
+    <button class="search-btn" onclick="clearFilters()">✕ Clear</button>
+  </div>
+
+  <!-- Bus Cards Grid -->
+  <div id="busCardContainer">
+
+    <div th:each="bus : ${buses}"
+         class="bus-card"
+         th:attr="data-from=${bus.routeFrom}, data-to=${bus.routeTo}, data-date=${bus.busJourneyDate}">
+
+      <!-- Header -->
+      <div class="card-header">
+        <h3 class="bus-name" th:text="${bus.busName}">Volvo Express</h3>
+        <span class="bus-type-badge" th:text="${bus.busType}">AC Sleeper</span>
+      </div>
+
+      <!-- Route -->
+      <div class="card-route">
+        <span th:text="${bus.routeFrom}">Delhi</span>
+        <span class="route-arrow">→</span>
+        <span th:text="${bus.routeTo}">Jaipur</span>
+        <span class="card-date" th:text="${bus.busJourneyDate}">2025-07-09</span>
+      </div>
+
+      <!-- Timings -->
+      <div class="card-timings">
+        <div class="timing-item">
+          <div class="timing-label">Departure</div>
+          <div class="timing-value" th:text="${bus.departureTime}">10:00 AM</div>
+        </div>
+        <div class="timing-item">
+          <div class="timing-label">Arrival</div>
+          <div class="timing-value" th:text="${bus.arrivalTime}">2:30 PM</div>
+        </div>
+        <div class="timing-item">
+          <div class="timing-label">Seats</div>
+          <div class="timing-value" th:text="${bus.seats}">40</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="card-footer">
+        <div class="card-meta">
+          <span class="meta-item">📍 Distance: <span th:text="${bus.distance}">260</span> km</span>
+          <span class="meta-item">🧑‍✈️ Driver: <span th:text="${bus.driverName}">Mr. Sharma</span></span>
+        </div>
+        <div class="card-price-block">
+          <div>
+            <div class="fare">₹<span th:text="${bus.fare}">650</span></div>
+            <div class="fare-sub">per seat</div>
+          </div>
+          <form th:action="@{/bookings/addBooking}" method="get">
+            <input type="hidden" name="busId" th:value="${bus.busId}" />
+            <button type="submit" class="btn-book">Book Now →</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state (shown via JS if no results) -->
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="empty-icon">🔍</div>
+      <h3>No buses found</h3>
+      <p>Try adjusting your search filters.</p>
+    </div>
+
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <button class="page-btn" id="prevBtn" onclick="prevPage()">← Prev</button>
+    <span class="page-indicator" id="pageIndicator">Page 1</span>
+    <button class="page-btn" id="nextBtn" onclick="nextPage()">Next →</button>
+  </div>
+
+  <script>
+    const cardsPerPage = 6;
+    let currentPage = 1;
+    let filteredCards = [];
+
+    function getAllCards() {
+      return Array.from(document.querySelectorAll('.bus-card'));
+    }
+
+    function filterCards() {
+      const from = document.getElementById('searchFrom').value.toLowerCase().trim();
+      const to   = document.getElementById('searchTo').value.toLowerCase().trim();
+      const date = document.getElementById('searchDate').value;
+
+      filteredCards = getAllCards().filter(card => {
+        const cardFrom = (card.dataset.from || '').toLowerCase();
+        const cardTo   = (card.dataset.to   || '').toLowerCase();
+        const cardDate = (card.dataset.date  || '');
+        return (!from || cardFrom.includes(from))
+            && (!to   || cardTo.includes(to))
+            && (!date || cardDate === date);
+      });
+
+      document.getElementById('totalCount').textContent = filteredCards.length;
+      currentPage = 1;
+      renderPage();
+    }
+
+    function renderPage() {
+      const all = getAllCards();
+      all.forEach(c => c.style.display = 'none');
+
+      const total = filteredCards.length;
+      const totalPages = Math.max(1, Math.ceil(total / cardsPerPage));
+      const start = (currentPage - 1) * cardsPerPage;
+      const end   = start + cardsPerPage;
+
+      filteredCards.slice(start, end).forEach(c => c.style.display = 'block');
+
+      document.getElementById('pageIndicator').textContent = `Page ${currentPage} of ${totalPages}`;
+      document.getElementById('prevBtn').disabled = currentPage <= 1;
+      document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+      document.getElementById('emptyState').style.display = total === 0 ? 'block' : 'none';
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(filteredCards.length / cardsPerPage);
+      if (currentPage < totalPages) { currentPage++; renderPage(); }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) { currentPage--; renderPage(); }
+    }
+
+    function clearFilters() {
+      document.getElementById('searchFrom').value = '';
+      document.getElementById('searchTo').value   = '';
+      document.getElementById('searchDate').value = '';
+      filterCards();
+    }
+
+    window.onload = filterCards;
+  </script>
+
+</div>
+</body>
+</html>

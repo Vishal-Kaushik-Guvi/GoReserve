@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Use - GoReserve</title>
+
+  <!-- ✅ Dark Mode Setup -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+
+  <!-- ✅ Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- ✅ AOS -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 min-h-screen">
+
+  <!-- ✅ Static Navbar -->
+  <nav class="bg-gradient-to-r from-green-600 to-blue-600 dark:from-gray-800 dark:to-gray-700 shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center h-16">
+        <a href="/index" class="text-white font-bold text-2xl">🚌 GoReserve</a>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex space-x-6 items-center text-white font-semibold">
+          <a href="/index" class="hover:text-yellow-300 transition duration-300">Home</a>
+          <a href="/index#about" class="hover:text-yellow-300 transition duration-300">About Us</a>
+
+          <!-- Services Dropdown -->
+          <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" @click.away="open = false" class="hover:text-yellow-300 transition duration-300">
+              Services ⌄
+            </button>
+            <div x-show="open" x-transition class="absolute bg-white shadow-lg mt-2 py-2 rounded text-gray-700 w-48 z-50">
+              <a href="/book-ticket" class="block px-4 py-2 hover:bg-gray-100">Book Ticket</a>
+              <a href="/showRoute" class="block px-4 py-2 hover:bg-gray-100">Find Bus</a>
+              <a href="/bookings/booking-history" class="block px-4 py-2 hover:bg-gray-100">Booking History</a>
+            </div>
+          </div>
+
+          <!-- Dark Mode Toggle -->
+          <button id="darkModeToggle" class="px-4 py-2 text-sm rounded bg-gray-200 dark:bg-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600">
+            🌙 Dark Mode
+          </button>
+
+          <a href="/login" class="hover:text-yellow-300 transition duration-300">Login</a>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden text-white">
+          <details class="relative">
+            <summary class="cursor-pointer font-semibold">Menu ⌄</summary>
+            <div class="absolute bg-white text-gray-800 mt-2 shadow-lg rounded w-48 z-50">
+              <a href="/index" class="block px-4 py-2 hover:bg-gray-100">Home</a>
+              <a href="/index#about" class="block px-4 py-2 hover:bg-gray-100">About Us</a>
+              <a href="/book-ticket" class="block px-4 py-2 hover:bg-gray-100">Book Ticket</a>
+              <a href="/showRoute" class="block px-4 py-2 hover:bg-gray-100">Find Bus</a>
+              <a href="/bookings/booking-history" class="block px-4 py-2 hover:bg-gray-100">Booking History</a>
+              <button id="darkModeToggleMobile" class="block w-full text-left px-4 py-2 hover:bg-gray-100">🌙 Dark Mode</button>
+              <a href="/login" class="block px-4 py-2 hover:bg-gray-100">Login</a>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ✅ Main Content -->
+  <div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-4xl font-bold text-center text-blue-700 mb-4">🚌 GoReserve - Online Bus Ticket Booking System</h1>
+    <p class="text-center text-lg mb-8">Welcome! I'm <strong>Vishal Kaushik</strong> from Sonipat, Haryana. Let me walk you through this project. 😊</p>
+
+<!-- GitHub Section -->
+<section class="text-center mt-16">
+  <h2 class="text-2xl font-semibold text-blue-600 dark:text-yellow-300 mb-4">💻 View Source Code</h2>
+  <p class="mb-6 text-gray-700 dark:text-gray-300">
+    Explore the complete source code of GoReserve on GitHub.
+  </p>
+<a href="https://github.com/Vishal-Kaushik-Guvi/ReservationSystem/tree/college"
+   target="_blank"
+   class="inline-block bg-black text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-gray-800 transition duration-300">
+   🔗 Visit GitHub Repository
+</a>
+</section>
+
+    <!-- Tech Stack -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-blue-600 mb-2">🛠️ Tech Stack</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <h3 class="font-bold mb-1">Frontend</h3>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-200">
+            <li>HTML</li>
+            <li>CSS</li>
+            <li>JavaScript</li>
+            <li>Tailwind CSS</li>
+            <li>Bootstrap</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-bold mb-1">Backend</h3>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-200">
+            <li>Java (Spring Boot - JDK 21)</li>
+            <li>Maven</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-bold mb-1">Database</h3>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-200">
+            <li>MySQL (localhost:3306)</li>
+            <li><small class="text-gray-500">Configurable via <code>application.properties</code></small></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-blue-600 mb-4">🚀 How It Works</h2>
+
+      <div class="mb-6">
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1">✅ Step 1: Run the Project</h3>
+        <p class="text-gray-700 dark:text-gray-200">Run the main class to start the Spring Boot application:</p>
+        <code class="block bg-gray-200 dark:bg-gray-700 text-sm p-2 mt-2 rounded">
+          src/main/java/JFS6WDE/OnlineBusTicketBooking/OnlineBusTicketBookingApplication.java
+        </code>
+      </div>
+
+      <div class="mb-6">
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1">🔐 Step 2: Access the Admin Panel</h3>
+        <p class="text-gray-700 dark:text-gray-200">Login using these admin credentials:</p>
+        <ul class="list-disc list-inside text-gray-700 dark:text-gray-200 ml-4 mt-2">
+          <li>Email: <code>admin@admin.com</code></li>
+          <li>Password: <code>admin</code></li>
+        </ul>
+        <p class="mt-2 text-gray-700 dark:text-gray-200">After logging in, you can manage bus details from the dashboard.</p>
+        <p class="mt-2 text-sm text-gray-500">Default admin credentials can be changed at:</p>
+        <code class="block bg-gray-200 dark:bg-gray-700 text-sm p-2 mt-1 rounded">
+          Services/UserServiceImpl.java (Line 54)
+        </code>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1">👤 Step 3: User Registration & Booking</h3>
+        <p class="text-gray-700 dark:text-gray-200">Register with your email and password. After login, you'll land on the user homepage.</p>
+        <ul class="list-disc list-inside text-gray-700 dark:text-gray-200 ml-4 mt-2">
+          <li>View available buses</li>
+          <li>Book tickets</li>
+          <li>Search buses</li>
+          <li>View booking history</li>
+          <li>Cancel bookings</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Project Structure -->
+    <section class="mb-10">
+      <h2 class="text-2xl font-semibold text-blue-600 mb-2">📁 Project Structure</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h4 class="font-bold mb-1">Backend Files:</h4>
+          <code class="block bg-gray-200 dark:bg-gray-700 text-sm p-2 rounded">
+            src/main/java/JFS6WDE/OnlineBusTicketBooking
+          </code>
+        </div>
+        <div>
+          <h4 class="font-bold mb-1">Frontend Files:</h4>
+          <code class="block bg-gray-200 dark:bg-gray-700 text-sm p-2 rounded">
+            src/main/resources
+          </code>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center text-gray-500 text-sm mt-12">
+      &copy; 2025 GoReserve by Vishal Kaushik | Made with ❤️ in Haryana
+    </footer>
+  </div>
+
+  <!-- ✅ Scripts -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      AOS.init({ once: true, duration: 1000 });
+
+      const toggles = [document.getElementById('darkModeToggle'), document.getElementById('darkModeToggleMobile')];
+      toggles.forEach(toggle => {
+        if (toggle) {
+          toggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            toggle.innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+          });
+          toggle.innerText = document.documentElement.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

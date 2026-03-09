@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8" /></head>
+<body>
+<div th:fragment="content">
+<style>
+
+/* ══════════════════════════════════════
+   PAYMENT PAGE — GoReserve
+   Design: refined dark-panel premium,
+   Stripe/Razorpay inspired
+══════════════════════════════════════ */
+
+/* ── TOP SHIMMER BAR ── */
+.pay-shimmer {
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%, var(--accent) 30%,
+    #fff 50%, var(--accent) 70%, transparent 100%);
+  background-size: 300% 100%;
+  animation: payShimmer 2s linear infinite;
+}
+@keyframes payShimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ── PROGRESS BAR ── */
+.pay-steps {
+  background: var(--ink);
+  padding: 18px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+}
+.ps { display: flex; align-items: center; gap: 8px; }
+.ps-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  border: 2px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.3);
+  flex-shrink: 0; transition: all .3s;
+}
+.ps-dot.done   { background: rgba(200,245,60,.15); border-color: var(--accent); color: var(--accent); }
+.ps-dot.active { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+.ps-lbl { font-size: 11.5px; font-weight: 500; color: rgba(255,255,255,.3); white-space: nowrap; }
+.ps-lbl.done   { color: var(--accent); }
+.ps-lbl.active { color: #fff; font-weight: 600; }
+.ps-line { width: 52px; height: 1px; background: rgba(255,255,255,.1); margin: 0 14px; flex-shrink:0; }
+.ps-line.done { background: var(--accent); opacity: .45; }
+
+/* ── PAGE SHELL ── */
+.pay-bg {
+  background: var(--surface);
+  position: relative;
+  min-height: 70vh;
+}
+.pay-bg::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 260px;
+  background: var(--ink);
+  z-index: 0;
+}
+.pay-wrap {
+  position: relative; z-index: 1;
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 40px 28px 80px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── PAGE TITLE (on dark bg) ── */
+.pay-heading {
+  grid-column: 1 / -1;
+  padding-bottom: 28px;
+}
+.pay-heading h1 {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 700; color: #fff;
+  margin-bottom: 4px;
+}
+.pay-heading p { font-size: 13px; color: rgba(255,255,255,.4); }
+
+/* ── MAIN CARD ── */
+.pay-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(10,10,15,.12);
+  animation: slideUp .45s cubic-bezier(.22,.68,0,1.2) both;
+}
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── CARD HEADER ── */
+.pay-card-head {
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+}
+.pay-card-head-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 15px; font-weight: 700; color: var(--ink);
+}
+.ssl-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(22,163,74,.07);
+  border: 1px solid rgba(22,163,74,.25);
+  color: #15803d; font-size: 11px; font-weight: 600;
+  padding: 5px 13px; border-radius: 20px; letter-spacing: .03em;
+}
+.pay-card-body { padding: 28px; }
+
+/* ── METHOD TABS ── */
+.method-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.m-tab {
+  padding: 16px 14px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px; cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+  transition: border-color .2s, background .2s, transform .15s, box-shadow .2s;
+  user-select: none;
+}
+.m-tab:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(10,10,15,.07); border-color: rgba(200,245,60,.5); }
+.m-tab.active { border-color: var(--accent); background: rgba(200,245,60,.06); }
+.m-tab-icon  { font-size: 26px; line-height: 1; }
+.m-tab-name  { font-size: 13px; font-weight: 700; color: var(--ink); font-family: 'Space Mono', monospace; }
+.m-tab-sub   { font-size: 10.5px; color: var(--mid); }
+.m-tab-check {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--accent); display: none;
+  place-items: center;
+  font-size: 10px; color: var(--ink); font-weight: 800;
+  margin-top: 2px;
+}
+.m-tab.active .m-tab-check { display: grid; }
+
+/* ── LIVE CARD VISUAL ── */
+.card3d-scene {
+  perspective: 1200px;
+  height: 190px;
+  margin-bottom: 26px;
+}
+.card3d {
+  width: 100%; height: 190px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform .65s cubic-bezier(.4,0,.2,1);
+  border-radius: 18px;
+}
+.card3d.flip { transform: rotateY(180deg); }
+
+.card3d-face {
+  position: absolute; inset: 0;
+  border-radius: 18px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+/* FRONT */
+.card3d-front {
+  background: linear-gradient(135deg, #0d0d14 0%, #1a1a28 40%, #0a0f1e 100%);
+  padding: 22px 26px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+/* Holographic shimmer overlay */
+.card3d-front::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    125deg,
+    transparent 20%,
+    rgba(200,245,60,.04) 35%,
+    rgba(255,255,255,.06) 50%,
+    rgba(200,245,60,.03) 65%,
+    transparent 80%
+  );
+  pointer-events: none;
+}
+/* Radial glow top-right */
+.card3d-front::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(200,245,60,.18) 0%, transparent 65%);
+  pointer-events: none;
+}
+.card3d-top { display: flex; justify-content: space-between; align-items: center; }
+.card3d-chip {
+  width: 44px; height: 33px;
+  background: linear-gradient(135deg, #c8a84b 0%, #f5e17a 45%, #b8963e 100%);
+  border-radius: 6px; overflow: hidden; position: relative;
+}
+.card3d-chip::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 9px,
+    rgba(0,0,0,.12) 9px, rgba(0,0,0,.12) 10px
+  ),
+  repeating-linear-gradient(
+    90deg, transparent, transparent 9px,
+    rgba(0,0,0,.12) 9px, rgba(0,0,0,.12) 10px
+  );
+}
+.card-brand-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px; font-weight: 700;
+  color: rgba(255,255,255,.9);
+  letter-spacing: -0.5px;
+  position: relative; z-index: 1;
+}
+.card3d-number {
+  font-family: 'Space Mono', monospace;
+  font-size: 19px; font-weight: 700; color: #fff;
+  letter-spacing: 3.5px;
+  text-shadow: 0 2px 8px rgba(0,0,0,.4);
+  position: relative; z-index: 1;
+}
+.card3d-bottom {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  position: relative; z-index: 1;
+}
+.card3d-info-group { display: flex; flex-direction: column; gap: 2px; }
+.card3d-info-label { font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.4); }
+.card3d-info-val   { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 600; color: #fff; letter-spacing: 1px; }
+
+/* BACK */
+.card3d-back {
+  background: linear-gradient(135deg, #1a1a28 0%, #0d0d14 100%);
+  transform: rotateY(180deg);
+  display: flex; flex-direction: column; justify-content: flex-start;
+}
+.card3d-mag {
+  width: 100%; height: 46px;
+  background: linear-gradient(180deg, #2a2a3a, #111);
+  margin-top: 22px;
+}
+.card3d-cvv-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 26px 0;
+}
+.card3d-sig {
+  flex: 1; height: 38px; border-radius: 5px;
+  background: repeating-linear-gradient(
+    -50deg, #f5f5f5 0px, #f5f5f5 8px,
+    #e8e8e8 8px, #e8e8e8 16px
+  );
+  display: flex; align-items: center; justify-content: flex-end; padding-right: 12px;
+}
+.card3d-cvv-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 15px; font-weight: 700; color: #111;
+}
+.card3d-cvv-label { font-size: 11px; color: rgba(255,255,255,.4); white-space: nowrap; }
+
+/* ── FORM FIELDS ── */
+.f-group  { margin-bottom: 18px; }
+.f-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+.f-row-3  { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.f-field  { display: flex; flex-direction: column; gap: 6px; }
+.f-field label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--mid);
+}
+.f-input {
+  padding: 12px 15px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 11px;
+  font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--ink);
+  outline: none;
+  transition: border-color .18s, background .18s, box-shadow .18s;
+  width: 100%;
+}
+.f-input::placeholder { color: rgba(10,10,15,.2); }
+.f-input:focus {
+  border-color: var(--accent); background: #fff;
+  box-shadow: 0 0 0 3px rgba(200,245,60,.13);
+}
+
+/* ── UPI PANEL ── */
+.upi-panel  { display: none; }
+.upi-panel.show { display: block; }
+.card-panel { display: none; }
+.card-panel.show { display: block; }
+
+.upi-apps {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 10px; margin-bottom: 22px;
+}
+.upi-app {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 16px 8px;
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 13px; cursor: pointer;
+  transition: border-color .18s, transform .15s, background .18s;
+  font-size: 11px; font-weight: 600; color: var(--mid);
+}
+.upi-app:hover { border-color: rgba(200,245,60,.5); transform: translateY(-2px); }
+.upi-app.sel   { border-color: var(--accent); background: rgba(200,245,60,.05); color: var(--ink); }
+.upi-app-img   { font-size: 26px; line-height:1; }
+
+/* QR code area */
+.upi-qr-block {
+  border: 1.5px dashed var(--border);
+  border-radius: 14px; padding: 22px;
+  text-align: center; margin-bottom: 18px;
+  display: none;
+}
+.upi-qr-block.show { display: block; }
+.qr-grid {
+  display: inline-grid;
+  grid-template-columns: repeat(9,8px);
+  grid-template-rows: repeat(9,8px);
+  gap: 2px; margin-bottom: 10px;
+}
+.qr-c { border-radius: 2px; }
+.upi-qr-label { font-size: 12px; color: var(--mid); }
+.upi-qr-timer {
+  font-family: 'Space Mono', monospace;
+  font-size: 20px; font-weight: 700; color: var(--ink);
+  margin: 6px 0;
+}
+
+/* OR divider */
+.or-div {
+  display: flex; align-items: center; gap: 12px;
+  margin: 18px 0; color: var(--mid); font-size: 12px;
+}
+.or-div::before, .or-div::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── PAY BUTTON ── */
+.btn-pay {
+  width: 100%; background: var(--accent); color: var(--ink);
+  font-family: 'Space Mono', monospace;
+  font-size: 14px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 17px 24px; border: none; border-radius: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: background .18s, transform .15s, box-shadow .2s;
+  position: relative; overflow: hidden;
+  margin-top: 22px;
+}
+.btn-pay::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.22) 0%, transparent 55%);
+  pointer-events: none;
+}
+.btn-pay:hover { background: var(--accent-dim); transform: translateY(-2px); box-shadow: 0 12px 36px rgba(200,245,60,.35); }
+.btn-pay:active { transform: translateY(0); }
+
+.pay-footnote {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 11px; color: var(--mid); margin-top: 10px;
+}
+
+/* ── ERROR ── */
+.pay-error {
+  background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.25);
+  color: #dc2626; padding: 12px 16px; border-radius: 10px;
+  font-size: 13px; display: flex; align-items: center; gap: 8px;
+  margin-bottom: 20px; animation: slideUp .3s ease both;
+}
+
+/* ── CANCEL ── */
+.cancel-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: var(--mid); font-size: 13px; text-decoration: none;
+  padding: 10px 0; margin-top: 8px;
+  transition: color .18s;
+}
+.cancel-link:hover { color: #dc2626; }
+
+/* ══════════════════════
+   SIDEBAR
+══════════════════════ */
+.pay-sidebar { position: sticky; top: 76px; }
+
+/* Order card */
+.order-card {
+  background: var(--ink); border-radius: 18px; padding: 26px;
+  overflow: hidden; position: relative;
+  margin-bottom: 16px;
+  animation: slideUp .45s .1s cubic-bezier(.22,.68,0,1.2) both;
+}
+.order-card::before {
+  content: '';
+  position: absolute; bottom: -60px; left: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(200,245,60,.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+.oc-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.3); margin-bottom: 14px; }
+.oc-booking-id {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.5); font-family: 'Space Mono', monospace;
+  font-size: 11px; padding: 4px 12px; border-radius: 7px; margin-bottom: 16px;
+}
+.oc-bus-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 6px;
+}
+.oc-route {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 600; color: rgba(255,255,255,.65);
+  margin-bottom: 20px;
+}
+.oc-route-arrow { color: var(--accent); font-size: 16px; }
+
+.oc-rows {
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding-top: 16px; display: flex; flex-direction: column; gap: 11px;
+}
+.oc-row { display: flex; justify-content: space-between; align-items: center; }
+.oc-row-lbl { font-size: 12px; color: rgba(255,255,255,.38); }
+.oc-row-val { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: #fff; }
+
+.oc-divider { height: 1px; background: rgba(255,255,255,.07); margin: 12px 0; }
+
+.oc-total { display: flex; justify-content: space-between; align-items: center; }
+.oc-total-lbl { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .05em; }
+.oc-total-val { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1; }
+
+/* Trust block */
+.trust-card {
+  background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px;
+  animation: slideUp .45s .2s cubic-bezier(.22,.68,0,1.2) both;
+}
+.trust-card-title { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--mid); margin-bottom: 14px; }
+.trust-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+}
+.trust-row:last-child { border-bottom: none; padding-bottom: 0; }
+.trust-ico { width: 32px; height: 32px; background: var(--ink); border-radius: 8px; display: grid; place-items: center; font-size: 15px; flex-shrink: 0; }
+.trust-text-title { font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 1px; }
+.trust-text-sub   { font-size: 11px; color: var(--mid); line-height: 1.5; }
+
+/* Brand logos row */
+.brand-logos {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.brand-logo-chip {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 12px;
+  font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+  color: var(--mid);
+}
+
+/* ── DARK MODE ── */
+.dark .pay-card          { background: #16161e; border-color: rgba(255,255,255,.07); }
+.dark .pay-card-head     { border-color: rgba(255,255,255,.07); }
+.dark .pay-card-head-title { color: #fff; }
+.dark .m-tab             { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
+.dark .m-tab-name        { color: #fff; }
+.dark .m-tab.active      { background: rgba(200,245,60,.07); border-color: var(--accent); }
+.dark .f-field label     { color: rgba(255,255,255,.4); }
+.dark .f-input           { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: #fff; }
+.dark .f-input::placeholder { color: rgba(255,255,255,.2); }
+.dark .f-input:focus     { background: rgba(200,245,60,.04); border-color: var(--accent); }
+.dark .upi-app           { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); color: rgba(255,255,255,.4); }
+.dark .upi-app.sel       { background: rgba(200,245,60,.07); color: #fff; }
+.dark .upi-qr-block      { border-color: rgba(255,255,255,.1); }
+.dark .upi-qr-label      { color: rgba(255,255,255,.4); }
+.dark .upi-qr-timer      { color: #fff; }
+.dark .or-div            { color: rgba(255,255,255,.3); }
+.dark .or-div::before, .dark .or-div::after { background: rgba(255,255,255,.08); }
+.dark .pay-footnote      { color: rgba(255,255,255,.3); }
+.dark .cancel-link       { color: rgba(255,255,255,.3); }
+.dark .trust-card        { background: #16161e; border-color: rgba(255,255,255,.07); }
+.dark .trust-card-title  { color: rgba(255,255,255,.35); }
+.dark .trust-row         { border-color: rgba(255,255,255,.06); }
+.dark .trust-text-title  { color: #fff; }
+.dark .trust-text-sub    { color: rgba(255,255,255,.4); }
+.dark .brand-logo-chip   { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: rgba(255,255,255,.4); }
+.dark .brand-logos       { border-color: rgba(255,255,255,.07); }
+.dark .ssl-pill          { background: rgba(22,163,74,.1); border-color: rgba(22,163,74,.25); }
+.dark .pay-bg::before    { background: #0d0d14; }
+
+/* ── RESPONSIVE ── */
+@media (max-width:920px) {
+  .pay-wrap { grid-template-columns: 1fr; }
+  .pay-sidebar { position: static; }
+  .pay-steps { padding: 16px 20px; }
+  .ps-line { width: 28px; }
+}
+@media (max-width:600px) {
+  .pay-wrap { padding: 20px 16px 60px; }
+  .f-row, .f-row-3 { grid-template-columns: 1fr; }
+  .upi-apps { grid-template-columns: repeat(2,1fr); }
+  .ps-lbl { display: none; }
+  .pay-heading h1 { font-size: 22px; }
+  .method-tabs { grid-template-columns: 1fr 1fr; }
+}
+
+</style>
+
+<!-- Shimmer bar -->
+<div class="pay-shimmer"></div>
+
+<!-- Progress steps -->
+<div class="pay-steps">
+  <div class="ps">
+    <div class="ps-dot done">✓</div>
+    <span class="ps-lbl done">Select Bus</span>
+  </div>
+  <div class="ps-line done"></div>
+  <div class="ps">
+    <div class="ps-dot done">✓</div>
+    <span class="ps-lbl done">Passenger Details</span>
+  </div>
+  <div class="ps-line done"></div>
+  <div class="ps">
+    <div class="ps-dot active">3</div>
+    <span class="ps-lbl active">Payment</span>
+  </div>
+  <div class="ps-line"></div>
+  <div class="ps">
+    <div class="ps-dot">4</div>
+    <span class="ps-lbl">Confirmation</span>
+  </div>
+</div>
+
+<div class="pay-bg">
+  <div class="pay-wrap">
+
+    <!-- Heading (on dark strip) -->
+    <div class="pay-heading">
+      <h1>Complete Your Payment</h1>
+      <p>Secure checkout · Your information is encrypted</p>
+    </div>
+
+    <!-- ════ LEFT ════ -->
+    <div>
+      <div class="pay-card">
+        <div class="pay-card-head">
+          <span class="pay-card-head-title">Payment Details</span>
+          <span class="ssl-pill">🔒 256-bit SSL Encrypted</span>
+        </div>
+
+        <div class="pay-card-body">
+
+          <!-- Error -->
+          <div th:if="${error}" class="pay-error">
+            <span>⚠️</span>
+            <span th:text="${error}">Payment failed. Please try again.</span>
+          </div>
+
+          <!-- Method tabs -->
+          <div class="method-tabs">
+            <div class="m-tab active" id="tab-card" onclick="switchMethod('card')">
+              <span class="m-tab-icon">💳</span>
+              <span class="m-tab-name">Card</span>
+              <span class="m-tab-sub">Debit / Credit</span>
+              <span class="m-tab-check">✓</span>
+            </div>
+            <div class="m-tab" id="tab-upi" onclick="switchMethod('upi')">
+              <span class="m-tab-icon">📱</span>
+              <span class="m-tab-name">UPI</span>
+              <span class="m-tab-sub">GPay · PhonePe · Paytm</span>
+              <span class="m-tab-check">✓</span>
+            </div>
+          </div>
+
+          <form th:action="@{/bookings/payment(bookingId=${booking.id})}"
+                method="post" th:object="${paymentDto}" id="payForm">
+
+            <!-- ── CARD PANEL ── -->
+            <div class="card-panel show" id="cardPanel">
+
+              <!-- Live card visual -->
+              <div class="card3d-scene">
+                <div class="card3d" id="card3d">
+                  <!-- FRONT -->
+                  <div class="card3d-face card3d-front">
+                    <div class="card3d-top">
+                      <div class="card3d-chip"></div>
+                      <span class="card-brand-logo" id="cBrand">VISA</span>
+                    </div>
+                    <div class="card3d-number" id="cNumber">•••• &nbsp;•••• &nbsp;•••• &nbsp;••••</div>
+                    <div class="card3d-bottom">
+                      <div class="card3d-info-group">
+                        <span class="card3d-info-label">Card Holder</span>
+                        <span class="card3d-info-val" id="cHolder">FULL NAME</span>
+                      </div>
+                      <div class="card3d-info-group" style="text-align:right;">
+                        <span class="card3d-info-label">Expires</span>
+                        <span class="card3d-info-val" id="cExpiry">MM / YY</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- BACK -->
+                  <div class="card3d-face card3d-back">
+                    <div class="card3d-mag"></div>
+                    <div class="card3d-cvv-row">
+                      <div class="card3d-sig">
+                        <span class="card3d-cvv-num" id="cCvv">•••</span>
+                      </div>
+                      <span class="card3d-cvv-label">CVV</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card number -->
+              <div class="f-group">
+                <div class="f-field">
+                  <label for="cardNumber">Card Number</label>
+                  <input class="f-input" type="text" id="cardNumber" th:field="*{cardNumber}"
+                         placeholder="0000  0000  0000  0000"
+                         maxlength="19" autocomplete="cc-number"
+                         oninput="onCardNum(this)" />
+                </div>
+              </div>
+
+              <!-- Holder -->
+              <div class="f-group">
+                <div class="f-field">
+                  <label for="cardHolder">Name on Card</label>
+                  <input class="f-input" type="text" id="cardHolder" name="cardHolder"
+                         placeholder="As printed on card"
+                         autocomplete="cc-name"
+                         oninput="document.getElementById('cHolder').textContent = this.value.toUpperCase() || 'FULL NAME'" />
+                </div>
+              </div>
+
+              <!-- Expiry + CVV -->
+              <div class="f-row">
+                <div class="f-field">
+                  <label for="cardExpiry">Expiry Date</label>
+                  <input class="f-input" type="text" id="cardExpiry" name="cardExpiry"
+                         placeholder="MM / YY" maxlength="7"
+                         autocomplete="cc-exp"
+                         oninput="onExpiry(this)" />
+                </div>
+                <div class="f-field">
+                  <label for="cvv">CVV</label>
+                  <input class="f-input" type="password" id="cvv" th:field="*{cvv}"
+                         placeholder="•••" maxlength="3"
+                         autocomplete="cc-csc"
+                         onfocus="document.getElementById('card3d').classList.add('flip')"
+                         onblur="document.getElementById('card3d').classList.remove('flip')"
+                         oninput="document.getElementById('cCvv').textContent = this.value || '•••'" />
+                </div>
+              </div>
+
+              <input type="hidden" name="paymentMode" value="CARD" id="modeCard" />
+            </div>
+
+            <!-- ── UPI PANEL ── -->
+            <div class="upi-panel" id="upiPanel">
+
+              <!-- App shortcuts -->
+              <div class="upi-apps">
+                <div class="upi-app" onclick="pickUpi(this,'gpay')">
+                  <span class="upi-app-img">🟢</span>Google Pay
+                </div>
+                <div class="upi-app" onclick="pickUpi(this,'phonepe')">
+                  <span class="upi-app-img">🟣</span>PhonePe
+                </div>
+                <div class="upi-app" onclick="pickUpi(this,'paytm')">
+                  <span class="upi-app-img">🔵</span>Paytm
+                </div>
+                <div class="upi-app" onclick="pickUpi(this,'other')">
+                  <span class="upi-app-img">💸</span>Other UPI
+                </div>
+              </div>
+
+              <!-- Fake QR -->
+              <div class="upi-qr-block" id="upiQr">
+                <div class="qr-grid" id="qrGrid"></div>
+                <div class="upi-qr-label">Scan with any UPI app</div>
+                <div class="upi-qr-timer" id="qrTimer">04:59</div>
+                <div class="upi-qr-label">QR expires in</div>
+              </div>
+
+              <div class="or-div">or enter UPI ID manually</div>
+
+              <div class="f-field">
+                <label for="upiId">UPI ID</label>
+                <input class="f-input" type="text" id="upiId" th:field="*{upiId}"
+                       placeholder="yourname@upi" autocomplete="off" />
+              </div>
+
+              <input type="hidden" name="paymentMode" value="UPI" id="modeUpi" />
+            </div>
+
+            <!-- PAY BUTTON -->
+            <button type="submit" class="btn-pay" id="payBtn">
+              🔒&nbsp; Pay ₹<span th:text="${booking.fare}">0</span> Now
+            </button>
+            <p class="pay-footnote">
+              🛡️ Secured by GoReserve Pay &nbsp;·&nbsp; Card details are never stored
+            </p>
+
+          </form>
+
+          <a th:href="@{/bookings/addBooking(busId=${booking.bus.busId})}"
+             class="cancel-link">← Cancel &amp; go back</a>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ RIGHT SIDEBAR ════ -->
+    <div class="pay-sidebar">
+
+      <!-- Order Summary -->
+      <div class="order-card">
+        <div class="oc-label">Order Summary</div>
+        <div class="oc-booking-id">
+          Booking #<span th:text="${booking.id}">0000</span>
+        </div>
+        <div class="oc-bus-name" th:text="${booking.bus.busName}">Volvo Express</div>
+        <div class="oc-route">
+          <span th:text="${booking.routeFrom}">Delhi</span>
+          <span class="oc-route-arrow">→</span>
+          <span th:text="${booking.routeTo}">Jaipur</span>
+        </div>
+        <div class="oc-rows">
+          <div class="oc-row">
+            <span class="oc-row-lbl">Journey Date</span>
+            <span class="oc-row-val" th:text="${booking.bus.busJourneyDate}">—</span>
+          </div>
+          <div class="oc-row">
+            <span class="oc-row-lbl">Departure</span>
+            <span class="oc-row-val" th:text="${booking.bus.departureTime}">—</span>
+          </div>
+          <div class="oc-row">
+            <span class="oc-row-lbl">Bus Type</span>
+            <span class="oc-row-val" th:text="${booking.bus.busType}">AC Sleeper</span>
+          </div>
+          <div class="oc-divider"></div>
+          <div class="oc-row">
+            <span class="oc-row-lbl">Seats</span>
+            <span class="oc-row-val" th:text="${booking.bookseat}">1</span>
+          </div>
+          <div class="oc-row">
+            <span class="oc-row-lbl">Fare / seat</span>
+            <span class="oc-row-val">₹<span th:text="${booking.bus.fare}">650</span></span>
+          </div>
+          <div class="oc-row">
+            <span class="oc-row-lbl">Service fee</span>
+            <span class="oc-row-val">₹<span th:text="${booking.bookseat * 25}">25</span></span>
+          </div>
+        </div>
+        <div class="oc-divider" style="margin-top:14px;"></div>
+        <div class="oc-total">
+          <span class="oc-total-lbl">Total Due</span>
+          <span class="oc-total-val">₹<span th:text="${booking.fare}">0</span></span>
+        </div>
+      </div>
+
+      <!-- Trust / Security -->
+      <div class="trust-card">
+        <div class="trust-card-title">Why GoReserve Pay is safe</div>
+        <div class="trust-row">
+          <div class="trust-ico">🔒</div>
+          <div>
+            <div class="trust-text-title">256-bit SSL Encryption</div>
+            <div class="trust-text-sub">All data is fully encrypted in transit.</div>
+          </div>
+        </div>
+        <div class="trust-row">
+          <div class="trust-ico">🛡️</div>
+          <div>
+            <div class="trust-text-title">PCI DSS Compliant</div>
+            <div class="trust-text-sub">Meets the highest card security standards.</div>
+          </div>
+        </div>
+        <div class="trust-row">
+          <div class="trust-ico">🚫</div>
+          <div>
+            <div class="trust-text-title">No Card Storage</div>
+            <div class="trust-text-sub">We never store your card details.</div>
+          </div>
+        </div>
+        <div class="trust-row">
+          <div class="trust-ico">↩️</div>
+          <div>
+            <div class="trust-text-title">Instant Refunds</div>
+            <div class="trust-text-sub">Cancellations refunded in 3–5 business days.</div>
+          </div>
+        </div>
+        <div class="brand-logos">
+          <span class="brand-logo-chip">VISA</span>
+          <span class="brand-logo-chip">MC</span>
+          <span class="brand-logo-chip">RuPay</span>
+          <span class="brand-logo-chip">UPI</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Method switch ── */
+  function switchMethod(m) {
+    const isCard = m === 'card';
+    document.getElementById('cardPanel').classList.toggle('show', isCard);
+    document.getElementById('upiPanel').classList.toggle('show', !isCard);
+    document.getElementById('tab-card').classList.toggle('active', isCard);
+    document.getElementById('tab-upi').classList.toggle('active', !isCard);
+  }
+
+  /* ── UPI app picker ── */
+  let qrInterval = null;
+  function pickUpi(el, app) {
+    document.querySelectorAll('.upi-app').forEach(a => a.classList.remove('sel'));
+    el.classList.add('sel');
+    const placeholders = { gpay:'yourname@okaxis', phonepe:'yourname@ybl', paytm:'yourname@paytm', other:'yourname@upi' };
+    document.getElementById('upiId').placeholder = placeholders[app] || 'yourname@upi';
+
+    // Show QR
+    const qrEl = document.getElementById('upiQr');
+    qrEl.classList.add('show');
+    generateQr();
+    startQrTimer();
+  }
+
+  /* ── Fake QR generator ── */
+  function generateQr() {
+    const grid = document.getElementById('qrGrid');
+    grid.innerHTML = '';
+    const pattern = [
+      1,1,1,1,1,1,1,0,0,
+      1,0,0,0,0,0,1,0,1,
+      1,0,1,1,1,0,1,0,0,
+      1,0,1,1,1,0,1,0,1,
+      1,0,1,1,1,0,1,0,0,
+      1,0,0,0,0,0,1,0,1,
+      1,1,1,1,1,1,1,0,1,
+      0,0,0,0,0,0,0,0,0,
+      0,1,0,1,1,0,1,1,0,
+    ];
+    pattern.forEach(v => {
+      const c = document.createElement('div');
+      c.className = 'qr-c';
+      c.style.background = v ? 'var(--ink)' : 'transparent';
+      grid.appendChild(c);
+    });
+  }
+
+  /* ── QR countdown ── */
+  function startQrTimer() {
+    if (qrInterval) clearInterval(qrInterval);
+    let secs = 299;
+    const el = document.getElementById('qrTimer');
+    qrInterval = setInterval(() => {
+      if (secs <= 0) { clearInterval(qrInterval); el.textContent = 'Expired'; return; }
+      secs--;
+      const m = String(Math.floor(secs/60)).padStart(2,'0');
+      const s = String(secs % 60).padStart(2,'0');
+      el.textContent = m + ':' + s;
+    }, 1000);
+  }
+
+  /* ── Card number format + brand detect ── */
+  function onCardNum(input) {
+    let v = input.value.replace(/\D/g, '').slice(0,16);
+    input.value = v.replace(/(.{4})/g, '$1  ').trim();
+    const disp = v.padEnd(16,'•').replace(/(.{4})/g,'$1 ').trim();
+    document.getElementById('cNumber').textContent = disp;
+    const first = v[0];
+    const brand = first === '4' ? 'VISA' : first === '5' ? 'MASTERCARD' : v.startsWith('60') || v.startsWith('65') ? 'RuPay' : v.startsWith('34') || v.startsWith('37') ? 'AMEX' : 'VISA';
+    document.getElementById('cBrand').textContent = brand;
+  }
+
+  /* ── Expiry format ── */
+  function onExpiry(input) {
+    let v = input.value.replace(/\D/g,'').slice(0,4);
+    if (v.length >= 3) v = v.slice(0,2) + ' / ' + v.slice(2);
+    input.value = v;
+    document.getElementById('cExpiry').textContent = v || 'MM / YY';
+  }
+</script>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<div th:fragment="adminnavbar">
+  <nav class="bg-gradient-to-r from-green-600 to-blue-600 dark:from-gray-800 dark:to-gray-700 shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center h-16">
+
+        <!-- Logo -->
+        <a href="/index" class="text-white font-bold text-2xl">🚌 GoReserve</a>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex space-x-6 items-center text-white font-semibold">
+
+          <a href="/adminBusList" class="hover:text-yellow-300 transition duration-300">Admin Home</a>
+
+          <!-- Admin Panel Dropdown -->
+          <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" @click.away="open = false" class="hover:text-yellow-300 transition duration-300">
+              Admin Panel ⌄
+            </button>
+            <div x-show="open" x-transition class="absolute bg-white dark:bg-gray-800 shadow-lg mt-2 py-2 rounded text-gray-700 dark:text-white w-48 z-50">
+              <a href="/addBus" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">➕ Add Bus</a>
+              <a href="/showUsers" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">👥 Show Users</a>
+            </div>
+          </div>
+
+          <!-- Dark Mode Toggle -->
+          <button id="darkModeToggle" class="px-4 py-2 text-sm rounded bg-gray-200 dark:bg-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600">
+            🌙 Dark Mode
+          </button>
+
+          <!-- Authenticated -->
+          <div th:if="${#authorization.expression('isAuthenticated()')}" class="flex items-center space-x-4">
+            <span class="text-yellow-200">👤 <span th:text="${loggedInUserName}">Admin</span></span>
+            <form th:action="@{/logout}" method="post">
+              <button type="submit" class="hover:text-yellow-300 transition duration-300">Logout</button>
+            </form>
+          </div>
+
+          <!-- Not Authenticated -->
+          <div th:unless="${#authorization.expression('isAuthenticated()')}">
+            <a href="/login" class="hover:text-yellow-300 transition duration-300">Login</a>
+          </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden text-white">
+          <details class="relative">
+            <summary class="cursor-pointer font-semibold">Menu ⌄</summary>
+            <div class="absolute bg-white dark:bg-gray-800 text-gray-800 dark:text-white mt-2 shadow-lg rounded w-48 z-50">
+              <a href="/index" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Home</a>
+              <a href="/index#about" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">About Us</a>
+              <a href="/admin/add-bus" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">➕ Add Bus</a>
+              <a href="/admin/show-users" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">👥 Show Users</a>
+              <button id="darkModeToggleMobile" class="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">🌙 Dark Mode</button>
+
+              <!-- Authenticated -->
+              <div th:if="${#authorization.expression('isAuthenticated()')}" class="border-t border-gray-200 dark:border-gray-600 mt-2">
+                <span class="block px-4 py-2 font-medium">👤 <span th:text="${#authentication.name}">Admin</span></span>
+                <form th:action="@{/logout}" method="post">
+                  <button type="submit" class="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Logout</button>
+                </form>
+              </div>
+
+              <!-- Not Authenticated -->
+              <a th:unless="${#authorization.expression('isAuthenticated()')}" href="/login" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Login</a>
+            </div>
+          </details>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+</div>

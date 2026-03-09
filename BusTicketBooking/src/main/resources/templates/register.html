@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Register - GoReserve</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Clash Display + DM Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --ink: #0a0a0f;
+      --surface: #f5f4f0;
+      --accent: #c8f53c;
+      --accent-dim: #b0d832;
+      --mid: #6b6b7a;
+      --border: rgba(10,10,15,0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      margin: 0;
+      background: var(--surface);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── LAYOUT ── */
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 56px 64px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorative radial glow */
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: -120px;
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, rgba(200,245,60,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; right: -80px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(200,245,60,0.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── BRAND ── */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 48px;
+    }
+
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    /* ── HEADLINE ── */
+    .headline {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .headline span {
+      color: var(--accent);
+    }
+
+    .subline {
+      font-size: 15px;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+
+    /* ── FORM ── */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 0;
+    }
+
+    .field {
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 7px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 13px 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .field input::placeholder {
+      color: rgba(255,255,255,0.22);
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+      background: rgba(200,245,60,0.05);
+      box-shadow: 0 0 0 3px rgba(200,245,60,0.1);
+    }
+
+    .field .error-msg {
+      font-size: 11px;
+      color: #ff6b6b;
+      margin-top: 5px;
+      padding-left: 2px;
+    }
+
+    /* ── SUBMIT BUTTON ── */
+    .btn-register {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: var(--ink);
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-register::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .btn-register:hover {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(200,245,60,0.3);
+    }
+
+    .btn-register:active {
+      transform: translateY(0);
+    }
+
+    /* ── LOGIN LINK ── */
+    .login-link {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .login-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+
+    .login-link a:hover { text-decoration: underline; }
+
+    /* ── TOAST ── */
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(200,245,60,0.12);
+      border: 1px solid rgba(200,245,60,0.35);
+      color: var(--accent);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 28px;
+      animation: slideIn 0.4s ease forwards;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      position: relative;
+      overflow: hidden;
+      background: #e8e7e2;
+    }
+
+    .right-panel img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Subtle vignette on image */
+    .right-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(10,10,15,0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    /* Floating tag on image */
+    .img-badge {
+      position: absolute;
+      bottom: 36px;
+      left: 36px;
+      background: var(--ink);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 2;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      animation: floatUp 0.6s 0.3s ease both;
+    }
+
+    .img-badge strong {
+      display: block;
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      color: var(--accent);
+      line-height: 1.2;
+    }
+
+    @keyframes floatUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── STEP INDICATOR ── */
+    .step-indicator {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 32px;
+    }
+
+    .step-dot {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.2);
+      transition: all 0.3s;
+    }
+
+    .step-dot.active {
+      background: var(--accent);
+      width: 24px;
+    }
+
+    .step-dot:not(.active) {
+      width: 8px;
+    }
+
+    /* ── REVEAL ANIMATIONS ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: reveal 0.5s ease forwards;
+    }
+
+    @keyframes reveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal:nth-child(1) { animation-delay: 0.05s; }
+    .reveal:nth-child(2) { animation-delay: 0.12s; }
+    .reveal:nth-child(3) { animation-delay: 0.19s; }
+    .reveal:nth-child(4) { animation-delay: 0.26s; }
+    .reveal:nth-child(5) { animation-delay: 0.33s; }
+    .reveal:nth-child(6) { animation-delay: 0.40s; }
+    .reveal:nth-child(7) { animation-delay: 0.47s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .page-wrapper {
+        grid-template-columns: 1fr;
+      }
+      .right-panel {
+        display: none;
+      }
+      .left-panel {
+        padding: 48px 28px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar (Thymeleaf fragment) -->
+  <div th:replace="fragments/navbar-minimal :: minimal-navbar"></div>
+
+  <div class="page-wrapper">
+
+    <!-- ── LEFT: FORM PANEL ── -->
+    <div class="left-panel">
+
+      <!-- Brand -->
+      <div class="brand reveal">
+        <div class="brand-icon">🚌</div>
+        <span class="brand-name">GoReserve</span>
+      </div>
+
+      <!-- Step dots -->
+      <div class="step-indicator reveal">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+
+      <!-- Headline -->
+      <div class="reveal">
+        <h1 class="headline">Create your<br><span>account.</span></h1>
+        <p class="subline">Book your seat in seconds — join thousands of daily commuters.</p>
+      </div>
+
+      <!-- Success Toast -->
+      <div th:if="${param.success}" class="toast reveal">
+        <span>✓</span>
+        <span>You've successfully joined GoReserve. Welcome aboard!</span>
+      </div>
+
+      <!-- Form -->
+      <form method="post" th:action="@{/register/save}" th:object="${user}">
+
+        <div class="form-row reveal">
+          <div class="field">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName"
+                   placeholder="e.g. Arjun"
+                   th:field="*{firstName}" />
+            <p th:errors="*{firstName}" class="error-msg"></p>
+          </div>
+          <div class="field">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName"
+                   placeholder="e.g. Sharma"
+                   th:field="*{lastName}" />
+            <p th:errors="*{lastName}" class="error-msg"></p>
+          </div>
+        </div>
+
+        <div class="field reveal">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email"
+                 placeholder="you@example.com"
+                 th:field="*{email}" />
+          <p th:errors="*{email}" class="error-msg"></p>
+        </div>
+
+        <div class="field reveal">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password"
+                 placeholder="Min. 8 characters"
+                 th:field="*{password}" />
+          <p th:errors="*{password}" class="error-msg"></p>
+        </div>
+
+        <div class="reveal">
+          <button type="submit" class="btn-register">
+            Create Account →
+          </button>
+        </div>
+
+      </form>
+
+      <p class="login-link reveal">
+        Already have an account?
+        <a th:href="@{/login}">Sign in</a>
+      </p>
+
+    </div>
+
+    <!-- ── RIGHT: IMAGE PANEL ── -->
+    <div class="right-panel">
+      <img src="/images/loginGif.gif" alt="Bus Animation" />
+      <div class="img-badge">
+        <strong>10,000+</strong>
+        daily trips reserved
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

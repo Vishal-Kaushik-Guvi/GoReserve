@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${pageTitle} ?: 'GoReserve'">Add Booking</title>
+
+  <!-- ✅ Dark Mode Setup -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+
+  <!-- ✅ Alpine.js (for interactivity if needed later) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- ✅ AOS for animation -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 min-h-screen">
+
+  <!-- Navbar Fragment -->
+  <div th:replace="fragments/adminnavbar :: adminnavbar"></div>
+  
+  <div class="max-w-4xl mx-auto py-10 px-6">
+    
+    <!-- ✅ Success Message -->
+    <div th:if="${success}" class="mb-6">
+      <div class="bg-blue-100 border border-blue-300 text-blue-700 px-4 py-3 rounded text-center shadow dark:bg-blue-800 dark:text-blue-100">
+        ✅ Bus updated successfully!
+      </div>
+    </div>
+
+    <!-- ✅ Update Bus Form -->
+    <div class="bg-white dark:bg-gray-900 shadow-lg rounded-lg p-8" data-aos="fade-up">
+      <h2 class="text-3xl font-semibold text-center text-green-700 dark:text-green-400 mb-8">
+        🛠️ Update Bus Details
+      </h2>
+
+      <form th:action="@{/updateBus}" method="post" class="space-y-6">
+        <input type="hidden" name="busId" th:value="${bus.busId}" />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="busName" class="block text-sm font-medium">Bus Name</label>
+            <input type="text" id="busName" name="busName" th:value="${bus.busName}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div>
+            <label for="driverName" class="block text-sm font-medium">Driver Name</label>
+            <input type="text" id="driverName" name="driverName" th:value="${bus.driverName}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div>
+            <label for="busType" class="block text-sm font-medium">Bus Type</label>
+            <input type="text" id="busType" name="busType" th:value="${bus.busType}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div>
+            <label for="routeFrom" class="block text-sm font-medium">Route From</label>
+            <input type="text" id="routeFrom" name="routeFrom" th:value="${bus.routeFrom}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div>
+            <label for="routeTo" class="block text-sm font-medium">Route To</label>
+            <input type="text" id="routeTo" name="routeTo" th:value="${bus.routeTo}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div>
+            <label for="busJourneyDate" class="block text-sm font-medium">Journey Date</label>
+            <input type="date" id="busJourneyDate" name="busJourneyDate" th:value="${bus.busJourneyDate}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div>
+            <label for="arrivalTime" class="block text-sm font-medium">Arrival Time</label>
+            <input type="time" id="arrivalTime" name="arrivalTime" th:value="${bus.arrivalTime}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div>
+            <label for="departureTime" class="block text-sm font-medium">Departure Time</label>
+            <input type="time" id="departureTime" name="departureTime" th:value="${bus.departureTime}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div>
+            <label for="seats" class="block text-sm font-medium">Total Seats</label>
+            <input type="number" id="seats" name="seats" th:value="${bus.seats}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div>
+            <label for="distance" class="block text-sm font-medium">Distance (km)</label>
+            <input type="number" id="distance" name="distance" th:value="${bus.distance}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+
+          <div class="md:col-span-2">
+            <label for="fare" class="block text-sm font-medium">Fare (₹)</label>
+            <input type="number" id="fare" name="fare" th:value="${bus.fare}" required
+              class="mt-1 w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+        </div>
+
+        <!-- ✅ Submit Button -->
+        <div class="text-center mt-6">
+          <button type="submit"
+            class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded shadow-md transition duration-300">
+            💾 Update Bus
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<!-- ✅ Dark Mode Toggle, AOS Init, Tilt Init -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      AOS.init({ once: true, duration: 1000 });
+
+      const toggles = [document.getElementById('darkModeToggle'), document.getElementById('darkModeToggleMobile')];
+      toggles.forEach(toggle => {
+        if (toggle) {
+          toggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            toggle.innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+          });
+          toggle.innerText = document.documentElement.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

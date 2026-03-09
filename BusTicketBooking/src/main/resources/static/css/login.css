@@ -1,0 +1,96 @@
+/* Base HTML and body settings */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    overflow: hidden;
+}
+
+/* Full-screen background image with dark overlay */
+.bg-overlay {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/images/login.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navbar styling */
+.navbar {
+    background-color: transparent !important;
+    padding: 1rem 2rem;
+}
+
+.navbar-brand {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffffff !important;
+    letter-spacing: 1px;
+    text-align: center;
+    width: 100%;
+}
+
+/* Center container */
+.container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+/* Glassmorphism card styling */
+.glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Input field styling */
+.form-control {
+    background-color: rgba(255, 255, 255, 0.85);
+    border: none;
+    border-radius: 10px;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.6);
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    border-radius: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transition: 0.3s;
+}
+
+/* Text alignment fix for mobile */
+.text-center span {
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    .glass-card {
+        padding: 1.5rem;
+        max-width: 100%;
+    }
+
+    .navbar-brand {
+        font-size: 1.5rem;
+    }
+}

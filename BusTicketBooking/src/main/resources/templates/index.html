@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8" /></head>
+<body>
+
+<div th:fragment="content">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow"><span>🚌</span> India's fastest bus booking</div>
+      <h1 class="hero-title">Travel smarter.<br>Book <span class="accent">faster.</span></h1>
+      <p class="hero-sub">Reserve your seat in seconds. Safe, reliable journeys across India — at your fingertips.</p>
+      <div class="hero-actions">
+        <a href="/browseBuses" class="btn-primary">Book a Ticket →</a>
+        <a href="#about" class="btn-ghost">Learn more</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item"><span class="stat-num">10K+</span><span class="stat-label">Daily trips</span></div>
+        <div class="stat-item"><span class="stat-num">98%</span><span class="stat-label">On-time rate</span></div>
+        <div class="stat-item"><span class="stat-num">500+</span><span class="stat-label">Bus operators</span></div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <img src="/images/loginGif.gif" alt="Bus in motion" />
+      <div class="hero-card">
+        <div class="hero-card-label">Next departure</div>
+        <div class="hero-card-value">6:30 AM</div>
+        <div class="hero-card-sub">Sonipat → Delhi · 3 seats left</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <span class="section-label">◈ Why GoReserve</span>
+    <h2 class="section-title">Everything you need for a <span class="hi">great journey</span></h2>
+    <div class="features-grid">
+      <div class="feature-card fade-up">
+        <div class="feature-icon">🚀</div>
+        <div class="feature-title">Fast Booking</div>
+        <p class="feature-desc">Reserve your seat in just a few clicks with our streamlined platform.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">Secure Payments</div>
+        <p class="feature-desc">Encrypted transactions and full data protection — always safe.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon">🕓</div>
+        <div class="feature-title">24/7 Support</div>
+        <p class="feature-desc">Our team is always available to assist, no matter the hour.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon">🌟</div>
+        <div class="feature-title">Clean Interface</div>
+        <p class="feature-desc">Navigate effortlessly through an intuitive booking experience.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="about">
+    <span class="section-label">◈ About us</span>
+    <h2 class="section-title">Built for every<br>Indian traveller</h2>
+    <div class="about-grid">
+      <div class="about-card fade-up">
+        <span class="about-card-icon">🌍</span>
+        <div class="about-card-title">Our Mission</div>
+        <p class="about-card-body">We aim to simplify travel for every Indian — affordable, convenient, and reliable journeys at your fingertips.</p>
+      </div>
+      <div class="about-card fade-up">
+        <span class="about-card-icon">📞</span>
+        <div class="about-card-title">Contact Us</div>
+        <div class="about-card-body">
+          <ul>
+            <li><strong>Email&nbsp;</strong> support@goreserve.com</li>
+            <li><strong>Phone&nbsp;</strong> +91 00000 00000</li>
+            <li><strong>Location&nbsp;</strong> Sector-23, Sonipat, Haryana</li>
+          </ul>
+        </div>
+      </div>
+      <div class="about-card fade-up">
+        <span class="about-card-icon">✅</span>
+        <div class="about-card-title">Trusted Experience</div>
+        <p class="about-card-body">Thousands of happy customers and top bus operator partnerships make us the go-to platform.</p>
+      </div>
+      <div class="about-card fade-up">
+        <span class="about-card-icon">💡</span>
+        <div class="about-card-title">Innovation & Tech</div>
+        <p class="about-card-body">Real-time tracking, instant confirmations, and seamless mobile access on every device.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band">
+    <div class="cta-band-text">
+      <h2>Ready to ride?</h2>
+      <p>Join thousands of daily commuters across India. Your next journey is one click away.</p>
+    </div>
+    <a href="/browseBuses" class="btn-dark">Start Booking →</a>
+  </section>
+
+  <!-- GUIDE -->
+  <section class="guide">
+    <div class="guide-text">
+      <h2>📘 How to use this project</h2>
+      <p>New here? Check out the step-by-step guide for setting up and exploring all GoReserve features.</p>
+    </div>
+    <a href="/ProjectGuid.html" class="btn-primary" style="background:var(--ink);color:#fff;">Open Guide →</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="index-footer">
+    <a href="/index" class="footer-brand">
+      <div class="footer-brand-icon">🚌</div>
+      <span class="footer-brand-name">GoReserve</span>
+    </a>
+    <span class="footer-copy">© 2025 GoReserve. Built with ❤️ in Sonipat, Haryana.</span>
+  </footer>
+
+  <script>
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+  </script>
+
+</div>
+</body>
+</html>

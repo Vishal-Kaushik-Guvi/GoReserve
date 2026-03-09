@@ -1,0 +1,199 @@
+<!-- templates/fragments/navbar-minimal.html -->
+<div th:fragment="minimal-navbar">
+
+  <style>
+    :root {
+      --ink: #0a0a0f;
+      --accent: #c8f53c;
+      --accent-dim: #b0d832;
+    }
+
+    .min-nav {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      z-index: 50;
+      background: rgba(10, 10, 15, 0.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .min-nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 28px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── LOGO ── */
+    .min-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .min-logo-icon {
+      width: 30px; height: 30px;
+      background: var(--accent);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+    }
+
+    .min-logo-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    /* ── DESKTOP LINKS ── */
+    .min-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .min-link {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: color 0.18s, background 0.18s;
+      white-space: nowrap;
+    }
+
+    .min-link:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .min-link.highlight {
+      color: var(--accent);
+      border: 1px solid rgba(200,245,60,0.25);
+      background: rgba(200,245,60,0.06);
+    }
+
+    .min-link.highlight:hover {
+      background: rgba(200,245,60,0.12);
+      color: var(--accent);
+    }
+
+    /* ── MOBILE TOGGLE ── */
+    .min-mobile-btn {
+      display: none;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.7);
+      padding: 5px 12px;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      gap: 6px;
+      align-items: center;
+      transition: background 0.18s, color 0.18s;
+    }
+
+    .min-mobile-btn:hover {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+
+    /* ── MOBILE DRAWER ── */
+    .min-drawer {
+      display: none;
+      flex-direction: column;
+      background: #0e0e16;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 16px 16px;
+      gap: 2px;
+    }
+
+    .min-drawer.open {
+      display: flex;
+      animation: drawerSlide 0.2s ease both;
+    }
+
+    @keyframes drawerSlide {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .mob-min-link {
+      display: block;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .mob-min-link:hover {
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+    }
+
+    .mob-min-link.highlight {
+      color: var(--accent);
+    }
+
+    @media (max-width: 768px) {
+      .min-links { display: none; }
+      .min-mobile-btn { display: flex; }
+    }
+  </style>
+
+  <!-- Google Fonts (if not already in <head>) -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+
+  <nav class="min-nav">
+    <div class="min-nav-inner">
+
+      <!-- Logo -->
+      <a href="/index" class="min-logo">
+        <div class="min-logo-icon">🚌</div>
+        <span class="min-logo-text">GoReserve</span>
+      </a>
+
+      <!-- Desktop Links -->
+      <div class="min-links">
+        <a href="/index" class="min-link">Home</a>
+        <a href="/index#about" class="min-link">About Us</a>
+        <a href="/ProjectGuid.html" class="min-link highlight">📖 How to Use</a>
+      </div>
+
+      <!-- Mobile Toggle -->
+      <button class="min-mobile-btn" onclick="this.closest('nav').querySelector('.min-drawer').classList.toggle('open')">
+        ☰ Menu
+      </button>
+
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div class="min-drawer">
+      <a href="/index" class="mob-min-link">🏠 Home</a>
+      <a href="/index#about" class="mob-min-link">ℹ️ About Us</a>
+      <a href="/ProjectGuid.html" class="mob-min-link highlight">📖 How to Use</a>
+    </div>
+
+  </nav>
+
+  <!-- Spacer so content isn't hidden under fixed nav -->
+  <div style="height: 56px;"></div>
+
+</div>

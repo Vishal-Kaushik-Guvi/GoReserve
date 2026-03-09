@@ -1,0 +1,80 @@
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.hero-section {
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  padding: 100px 20px;
+  text-align: center;
+  color: white;
+  animation: fadeInUp 1.5s ease-out;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.hero-section p {
+  font-size: 1.25rem;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.feature-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeIn 1.2s ease-in;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.1);
+}
+
+.why-choose {
+  background-image: url('/static/images/index.png');
+  background-size: cover;
+  background-position: center;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+#about{
+	background-image: url('/static/images/index.png');
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+
+  .feature-card {
+    text-align: center;
+  }
+}

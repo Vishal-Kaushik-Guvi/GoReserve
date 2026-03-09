@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8" /></head>
+<body>
+
+<div th:fragment="content">
+<style>
+  .bk-topbar {
+    height: 4px;
+    background: linear-gradient(to right, var(--accent), #a8e000, var(--accent));
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── PROGRESS STEPS ── */
+  .bk-progress {
+    background: var(--ink);
+    padding: 20px 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+  .step { display: flex; align-items: center; gap: 10px; }
+  .step-circle {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px; font-weight: 700;
+    border: 2px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.35);
+    background: transparent;
+    flex-shrink: 0;
+  }
+  .step-circle.active { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+  .step-circle.done   { background: rgba(200,245,60,0.15); border-color: var(--accent); color: var(--accent); }
+  .step-label { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.35); white-space: nowrap; }
+  .step-label.active { color: #fff; }
+  .step-label.done   { color: var(--accent); }
+  .step-line { width: 60px; height: 1px; background: rgba(255,255,255,0.12); margin: 0 16px; flex-shrink: 0; }
+  .step-line.done { background: var(--accent); opacity: 0.4; }
+
+  /* ── LAYOUT ── */
+  .bk-page { background: var(--surface); position: relative; z-index: 1; }
+  .bk-body {
+    max-width: 1100px; margin: 0 auto;
+    padding: 40px 32px 80px;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ── FORM SECTIONS ── */
+  .bk-section {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .bk-section:nth-child(1) { animation-delay: 0.05s; }
+  .bk-section:nth-child(2) { animation-delay: 0.12s; }
+  .bk-section:nth-child(3) { animation-delay: 0.19s; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .bk-section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink); margin-bottom: 22px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .bk-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── FIELDS ── */
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .field-row.solo { grid-template-columns: 1fr; max-width: 320px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--mid); }
+  .field input {
+    padding: 11px 14px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; font-size: 14px;
+    font-family: 'DM Sans', sans-serif; color: var(--ink);
+    outline: none; transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+  }
+  .field input::placeholder { color: rgba(10,10,15,0.22); }
+  .field input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(200,245,60,0.14); }
+  .field-hint { font-size: 11px; color: var(--mid); }
+
+  /* ── SEAT STEPPER ── */
+  .seat-input-wrap { display: flex; align-items: center; gap: 0; max-width: 160px; }
+  .seat-btn {
+    width: 40px; height: 44px; background: var(--ink); color: var(--accent);
+    border: none; cursor: pointer; font-size: 20px; font-weight: 700;
+    display: grid; place-items: center; transition: background 0.15s; flex-shrink: 0;
+  }
+  .seat-btn:first-child { border-radius: 10px 0 0 10px; }
+  .seat-btn:last-child  { border-radius: 0 10px 10px 0; }
+  .seat-btn:hover { background: #1e1e2a; }
+  .seat-count-display {
+    flex: 1; text-align: center;
+    font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700;
+    color: var(--ink); background: var(--surface);
+    border: 1.5px solid var(--border); border-left: none; border-right: none;
+    height: 44px; line-height: 44px; min-width: 60px;
+  }
+  #bookseat { display: none; }
+
+  .seat-error {
+    display: none; align-items: center; gap: 8px;
+    background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.25);
+    color: #dc2626; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 10px;
+  }
+  .seat-error.show { display: flex; }
+
+  /* ── PASSENGER CARDS ── */
+  #passengerDetailsContainer { display: flex; flex-direction: column; gap: 14px; }
+  .passenger-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 20px 18px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    position: relative; transition: border-color 0.2s;
+  }
+  .passenger-card:hover { border-color: rgba(200,245,60,0.4); }
+  .passenger-num {
+    position: absolute; top: -11px; left: 16px;
+    background: var(--accent); color: var(--ink);
+    font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700;
+    padding: 2px 10px; border-radius: 6px; letter-spacing: 0.05em;
+    grid-column: 1 / -1;
+  }
+
+  /* ── SIDEBAR ── */
+  .bk-sidebar { position: sticky; top: 80px; }
+
+  .bus-card-widget {
+    background: var(--ink); border-radius: 16px; padding: 26px;
+    margin-bottom: 16px; position: relative; overflow: hidden;
+    animation: fadeUp 0.4s 0.1s ease both;
+  }
+  .bus-card-widget::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(200,245,60,0.14) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .bcw-operator { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 8px; }
+  .bcw-name { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 16px; }
+  .bcw-route { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 18px; }
+  .bcw-arrow { color: var(--accent); font-size: 18px; }
+  .bcw-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
+  .bcw-meta-label { font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 3px; }
+  .bcw-meta-value { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: #fff; }
+  .bcw-seats { display: inline-flex; align-items: center; gap: 6px; background: rgba(200,245,60,0.1); border: 1px solid rgba(200,245,60,0.25); color: var(--accent); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; }
+
+  /* Fare widget */
+  .fare-widget { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 16px; animation: fadeUp 0.4s 0.2s ease both; }
+  .fare-widget-title { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); margin-bottom: 16px; }
+  .fare-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; color: var(--ink); }
+  .fare-row:last-of-type { border-bottom: none; }
+  .fare-row .lbl { color: var(--mid); }
+  .fare-row .val { font-weight: 600; font-family: 'Space Mono', monospace; font-size: 13px; }
+  .fare-total { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 14px; border-top: 2px solid var(--ink); }
+  .fare-total .lbl { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--ink); }
+  .fare-total .val { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: var(--ink); }
+
+  /* Trust */
+  .trust-widget { background: var(--surface-2); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; animation: fadeUp 0.4s 0.3s ease both; }
+  .trust-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .trust-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .trust-icon { width: 34px; height: 34px; background: var(--ink); border-radius: 8px; display: grid; place-items: center; font-size: 16px; flex-shrink: 0; }
+  .trust-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .trust-desc  { font-size: 11.5px; color: var(--mid); line-height: 1.5; }
+
+  /* Submit */
+  .btn-confirm {
+    width: 100%; background: var(--accent); color: var(--ink);
+    font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 16px 24px; border: none; border-radius: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: background 0.18s, transform 0.15s, box-shadow 0.2s;
+    position: relative; overflow: hidden; margin-top: 16px;
+  }
+  .btn-confirm::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.18) 0%,transparent 55%); pointer-events:none; }
+  .btn-confirm:hover { background: var(--accent-dim); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(200,245,60,0.32); }
+  .confirm-note { font-size: 11px; color: var(--mid); text-align: center; margin-top: 10px; }
+
+  /* ── DARK MODE ── */
+  .dark .bk-section        { background: #16161e; border-color: rgba(255,255,255,0.07); }
+  .dark .bk-section-title  { color: #fff; }
+  .dark .bk-section-title::after { background: rgba(255,255,255,0.08); }
+  .dark .field label       { color: rgba(255,255,255,0.4); }
+  .dark .field input       { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff; }
+  .dark .field input::placeholder { color: rgba(255,255,255,0.2); }
+  .dark .field input:focus { background: rgba(200,245,60,0.04); border-color: var(--accent); }
+  .dark .field-hint        { color: rgba(255,255,255,0.3); }
+  .dark .seat-count-display { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff; }
+  .dark .passenger-card    { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
+  .dark .fare-widget       { background: #16161e; border-color: rgba(255,255,255,0.07); }
+  .dark .fare-widget-title { color: rgba(255,255,255,0.35); }
+  .dark .fare-row          { border-color: rgba(255,255,255,0.07); color: #fff; }
+  .dark .fare-row .lbl     { color: rgba(255,255,255,0.4); }
+  .dark .fare-total        { border-color: rgba(255,255,255,0.15); }
+  .dark .fare-total .lbl, .dark .fare-total .val { color: #fff; }
+  .dark .trust-widget      { background: #12121a; border-color: rgba(255,255,255,0.07); }
+  .dark .trust-title       { color: #fff; }
+  .dark .trust-desc        { color: rgba(255,255,255,0.4); }
+  .dark .trust-item        { border-color: rgba(255,255,255,0.06); }
+  .dark .confirm-note      { color: rgba(255,255,255,0.3); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .bk-body { grid-template-columns: 1fr; }
+    .bk-sidebar { position: static; }
+    .bk-progress { padding: 16px 24px; }
+    .step-line { width: 32px; }
+  }
+  @media (max-width: 600px) {
+    .bk-body { padding: 24px 16px 60px; }
+    .bk-section { padding: 22px 18px; }
+    .field-row { grid-template-columns: 1fr; }
+    .passenger-card { grid-template-columns: 1fr; }
+    .step-label { display: none; }
+  }
+</style>
+
+<!-- Shimmer bar -->
+<div class="bk-topbar"></div>
+
+<!-- Progress Steps -->
+<div class="bk-progress">
+  <div class="step">
+    <div class="step-circle done">✓</div>
+    <span class="step-label done">Select Bus</span>
+  </div>
+  <div class="step-line done"></div>
+  <div class="step">
+    <div class="step-circle active">2</div>
+    <span class="step-label active">Passenger Details</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-circle">3</div>
+    <span class="step-label">Payment</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-circle">4</div>
+    <span class="step-label">Confirmation</span>
+  </div>
+</div>
+
+<div class="bk-page">
+  <form th:action="@{/bookings/addBooking(busId=${bus.busId})}" method="post"
+        th:object="${bookingDto}" onsubmit="return validateSeatCount()">
+
+    <input type="hidden" name="busId" th:value="${bus.busId}" />
+    <input type="hidden" id="bookseat" th:field="*{bookseat}" />
+
+    <div class="bk-body">
+
+      <!-- LEFT: FORM -->
+      <div class="bk-form-col">
+
+        <!-- Contact -->
+        <div class="bk-section">
+          <div class="bk-section-title">📞 Contact Details</div>
+          <div class="field-row solo">
+            <div class="field">
+              <label for="mobile">Mobile Number</label>
+              <input type="tel" id="mobile" th:field="*{mobileNumber}"
+                     required pattern="[0-9]{10}" maxlength="10"
+                     placeholder="Enter 10-digit number" />
+              <span class="field-hint">Used for booking confirmation &amp; updates</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seats -->
+        <div class="bk-section">
+          <div class="bk-section-title">🪑 Select Seats</div>
+          <label style="font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:10px;">
+            Number of Seats
+          </label>
+          <div class="seat-input-wrap">
+            <button type="button" class="seat-btn" onclick="changeSeat(-1)">−</button>
+            <div class="seat-count-display" id="seatDisplay">1</div>
+            <button type="button" class="seat-btn" onclick="changeSeat(1)">+</button>
+          </div>
+          <div class="field-hint" style="margin-top:8px;">
+            <span id="availableSeats" th:text="${bus.seats}" style="display:none;"></span>
+            <span id="seatsLeftText"></span>
+          </div>
+          <div class="seat-error" id="seatError">
+            <span>✕</span> Not enough seats available. Please reduce the count.
+          </div>
+        </div>
+
+        <!-- Passengers -->
+        <div class="bk-section" id="passengerSection">
+          <div class="bk-section-title">👥 Passenger Details</div>
+          <div id="passengerDetailsContainer"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: SIDEBAR -->
+      <div class="bk-sidebar">
+
+        <!-- Bus Widget -->
+        <div class="bus-card-widget">
+          <div class="bcw-operator">Your Journey</div>
+          <div class="bcw-name" th:text="${bus.busName}">Volvo Express</div>
+          <div class="bcw-route">
+            <span th:text="${bus.routeFrom}">Delhi</span>
+            <span class="bcw-arrow">→</span>
+            <span th:text="${bus.routeTo}">Jaipur</span>
+          </div>
+          <div class="bcw-meta">
+            <div>
+              <div class="bcw-meta-label">Date</div>
+              <div class="bcw-meta-value" th:text="${bus.busJourneyDate}">09 Jul</div>
+            </div>
+            <div>
+              <div class="bcw-meta-label">Departure</div>
+              <div class="bcw-meta-value" th:text="${bus.departureTime}">10:00</div>
+            </div>
+            <div>
+              <div class="bcw-meta-label">Arrival</div>
+              <div class="bcw-meta-value" th:text="${bus.arrivalTime}">14:30</div>
+            </div>
+            <div>
+              <div class="bcw-meta-label">Type</div>
+              <div class="bcw-meta-value" th:text="${bus.busType}">AC Sleeper</div>
+            </div>
+          </div>
+          <div class="bcw-seats">🪑 <span th:text="${bus.seats}">40</span> seats available</div>
+        </div>
+
+        <!-- Fare Calculator -->
+        <div class="fare-widget">
+          <div class="fare-widget-title">💰 Fare Summary</div>
+          <div class="fare-row">
+            <span class="lbl">Base fare / seat</span>
+            <span class="val">₹<span id="farePerSeat" th:text="${bus.fare}">650</span></span>
+          </div>
+          <div class="fare-row">
+            <span class="lbl">Seats selected</span>
+            <span class="val" id="fareSeats">1</span>
+          </div>
+          <div class="fare-row">
+            <span class="lbl">Service fee</span>
+            <span class="val">₹<span id="serviceFee">25</span></span>
+          </div>
+          <div class="fare-total">
+            <span class="lbl">Total</span>
+            <span class="val">₹<span id="totalFare">0</span></span>
+          </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="trust-widget">
+          <div class="trust-item">
+            <div class="trust-icon">🔒</div>
+            <div>
+              <div class="trust-title">Secure Booking</div>
+              <div class="trust-desc">Your data is encrypted and never shared.</div>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon">✅</div>
+            <div>
+              <div class="trust-title">Instant Confirmation</div>
+              <div class="trust-desc">Get your ticket seconds after payment.</div>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon">🎫</div>
+            <div>
+              <div class="trust-title">Easy Cancellation</div>
+              <div class="trust-desc">Cancel up to 2 hours before departure.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm Button -->
+        <button type="submit" class="btn-confirm">✅ Confirm &amp; Pay →</button>
+        <p class="confirm-note">By confirming you agree to our Terms &amp; Cancellation Policy.</p>
+
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  let seatCount = 1;
+
+  function getAvailable() {
+    return parseInt(document.getElementById('availableSeats').innerText) || 99;
+  }
+
+  function getFarePerSeat() {
+    return parseInt(document.getElementById('farePerSeat').innerText) || 0;
+  }
+
+  function updateFare() {
+    const fee   = 25 * seatCount;
+    const total = getFarePerSeat() * seatCount + fee;
+    document.getElementById('fareSeats').textContent  = seatCount;
+    document.getElementById('serviceFee').textContent = fee;
+    document.getElementById('totalFare').textContent  = total;
+    document.getElementById('seatDisplay').textContent = seatCount;
+    document.getElementById('bookseat').value = seatCount;
+  }
+
+  function changeSeat(delta) {
+    const available = getAvailable();
+    const next = seatCount + delta;
+    if (next < 1 || next > available) return;
+    seatCount = next;
+    document.getElementById('seatError').classList.remove('show');
+    updateFare();
+    generatePassengerFields();
+  }
+
+  function generatePassengerFields() {
+    const container = document.getElementById('passengerDetailsContainer');
+    container.innerHTML = '';
+    for (let i = 1; i <= seatCount; i++) {
+      const card = document.createElement('div');
+      card.className = 'passenger-card';
+      card.innerHTML = `
+        <div class="passenger-num">Passenger ${i}</div>
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" name="passengerNames" required placeholder="e.g. Arjun Sharma" />
+        </div>
+        <div class="field">
+          <label>Age</label>
+          <input type="number" name="passengerAges" required min="1" max="100" placeholder="e.g. 28" />
+        </div>
+      `;
+      container.appendChild(card);
+    }
+  }
+
+  function validateSeatCount() {
+    const available = getAvailable();
+    if (seatCount < 1 || seatCount > available) {
+      document.getElementById('seatError').classList.add('show');
+      return false;
+    }
+    return true;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('seatsLeftText').textContent = getAvailable() + ' seats available';
+    updateFare();
+    generatePassengerFields();
+  });
+</script>
+
+</div>
+</body>
+</html>

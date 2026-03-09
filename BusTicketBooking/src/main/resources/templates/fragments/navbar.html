@@ -1,0 +1,87 @@
+<div th:fragment="navbar">
+<nav class="goreserve-nav">
+
+  <!-- TOP BAR -->
+  <div class="nav-inner">
+
+    <!-- Logo -->
+    <a href="/index" class="nav-logo">
+      <div class="nav-logo-icon">🚌</div>
+      <span class="nav-logo-text">GoReserve</span>
+    </a>
+
+    <!-- Desktop Links -->
+    <div class="nav-links">
+
+      <a href="/index" class="nav-link">Home</a>
+      <a href="/index#about" class="nav-link">About</a>
+
+      <!-- Services Dropdown (CSS hover) -->
+      <div class="dropdown-wrap">
+        <button class="dropdown-trigger">
+          Services <i class="dropdown-arrow">▾</i>
+        </button>
+        <div class="dropdown-menu">
+          <a href="/book-ticket" class="dropdown-item"><span class="item-icon">🎫</span>Book Ticket</a>
+          <a href="/showRoute" class="dropdown-item"><span class="item-icon">🗺️</span>Find Bus</a>
+          <a th:href="@{/bookings/booking-history}" class="dropdown-item"><span class="item-icon">📋</span>Booking History</a>
+        </div>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <!-- Dark Mode Toggle -->
+      <button id="darkModeToggle" class="dark-toggle">
+        <span id="darkIcon">🌙</span>
+        <span id="darkLabel">Dark</span>
+      </button>
+
+      <div class="nav-divider"></div>
+
+      <!-- Authenticated -->
+      <div th:if="${#authorization.expression('isAuthenticated()')}" style="display:flex;align-items:center;gap:8px;">
+        <div class="user-pill">
+          <div class="user-avatar">👤</div>
+          <span class="user-name" th:text="${loggedInUserName}">Username</span>
+        </div>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+          <button type="submit" class="logout-btn">Logout</button>
+        </form>
+      </div>
+
+      <!-- Not logged in -->
+      <a th:unless="${#authorization.expression('isAuthenticated()')}" href="/login" class="btn-login">Sign In</a>
+
+    </div>
+
+    <!-- Mobile hamburger -->
+    <button class="mobile-toggle" onclick="this.closest('nav').querySelector('.mobile-drawer').classList.toggle('open')">
+      ☰ Menu
+    </button>
+
+  </div>
+
+  <!-- MOBILE DRAWER -->
+  <div class="mobile-drawer">
+    <a href="/index" class="mob-link">🏠 Home</a>
+    <a href="/index#about" class="mob-link">ℹ️ About</a>
+    <a href="/book-ticket" class="mob-link">🎫 Book Ticket</a>
+    <a href="/showRoute" class="mob-link">🗺️ Find Bus</a>
+    <a th:href="@{/bookings/booking-history}" class="mob-link">📋 Booking History</a>
+    <div class="mob-divider"></div>
+    <button id="darkModeToggleMobile" class="mob-link" style="background:none;border:none;text-align:left;cursor:pointer;font-family:inherit;width:100%;">🌙 Toggle Dark Mode</button>
+    <div class="mob-divider"></div>
+    <div th:if="${#authorization.expression('isAuthenticated()')}">
+      <div class="mob-user">
+        <div class="mob-user-dot"></div>
+        Signed in as <strong th:text="${#authentication.name}" style="color:#fff;margin-left:4px;">User</strong>
+      </div>
+      <form th:action="@{/logout}" method="post">
+        <button type="submit" class="mob-link" style="background:none;border:none;text-align:left;cursor:pointer;font-family:inherit;width:100%;color:#ff6b6b;">⬡ Logout</button>
+      </form>
+    </div>
+    <a th:unless="${#authorization.expression('isAuthenticated()')}" href="/login" class="mob-link" style="color:#c8f53c;font-weight:600;">→ Sign In</a>
+  </div>
+
+</nav>
+</div>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${pageTitle} ?: 'GoReserve'">My Bookings</title>
+
+  <!-- ✅ Early Dark Mode Init -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    };
+  </script>
+
+  <!-- ✅ Alpine.js (Dropdowns) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- ✅ AOS Animations -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+
+  <!-- Navbar Fragment -->
+  <div th:replace="fragments/adminnavbar :: adminnavbar"></div>
+
+  <div class="max-w-7xl mx-auto px-4 py-10">
+    <h1 class="text-4xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-500 mb-10">
+      Admin Bus List
+    </h1>
+
+    <!-- Bus Table -->
+    <div class="overflow-x-auto rounded-xl shadow border border-gray-200 dark:border-gray-700">
+      <table id="busTable" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm text-left">
+        <thead class="bg-gray-900 text-white text-xs uppercase">
+          <tr>
+            <th class="p-4">Bus</th>
+            <th class="p-4">Driver</th>
+            <th class="p-4">Type</th>
+            <th class="p-4">From</th>
+            <th class="p-4">To</th>
+            <th class="p-4">Date</th>
+            <th class="p-4">Arrival</th>
+            <th class="p-4">Departure</th>
+            <th class="p-4">Seats</th>
+            <th class="p-4">Distance</th>
+            <th class="p-4">Fare</th>
+            <th class="p-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="bus : ${buses}" class="hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            <td class="p-4" th:text="${bus.busName}">Bus</td>
+            <td class="p-4" th:text="${bus.driverName}">Driver</td>
+            <td class="p-4" th:text="${bus.busType}">Type</td>
+            <td class="p-4" th:text="${bus.routeFrom}">From</td>
+            <td class="p-4" th:text="${bus.routeTo}">To</td>
+            <td class="p-4" th:text="${bus.busJourneyDate}">Date</td>
+            <td class="p-4" th:text="${bus.arrivalTime}">Arrival</td>
+            <td class="p-4" th:text="${bus.departureTime}">Departure</td>
+            <td class="p-4" th:text="${bus.seats}">Seats</td>
+            <td class="p-4" th:text="${bus.distance}">Distance</td>
+            <td class="p-4" th:text="${bus.fare}">Fare</td>
+            <td class="p-4 space-x-2">
+              <a th:href="@{/updateBus(busId=${bus.busId})}" class="text-blue-500 hover:underline">Update</a>
+              <form th:action="@{/deleteBus}" method="post" class="inline">
+                <input type="hidden" name="busId" th:value="${bus.busId}" />
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="text-red-500 hover:underline">Delete</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="mt-6 text-center space-x-4">
+      <button onclick="prevPage()" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700">Previous</button>
+      <span id="pageInfo" class="font-medium"></span>
+      <button onclick="nextPage()" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-gray-700">Next</button>
+    </div>
+  </div>
+
+
+ <!-- ✅ Footer -->
+  <footer class="bg-white dark:bg-gray-900 text-center py-4 mt-10 shadow-inner">
+    <p class="text-gray-600 dark:text-gray-300">© 2025 GoReserve. All rights reserved.</p>
+  </footer>
+
+  <!-- ✅ AOS + VanillaTilt -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
+
+
+  <!-- Pagination Script -->
+  <script type="module">
+    const rowsPerPage = 5;
+    let currentPage = 1;
+
+    function paginateTable() {
+      const rows = document.querySelectorAll("#busTable tbody tr");
+      const pageCount = Math.ceil(rows.length / rowsPerPage);
+      rows.forEach((row, index) => {
+        row.style.display = (index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage) ? "" : "none";
+      });
+      document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${pageCount}`;
+    }
+
+    window.nextPage = function () {
+      const rows = document.querySelectorAll("#busTable tbody tr");
+      const pageCount = Math.ceil(rows.length / rowsPerPage);
+      if (currentPage < pageCount) {
+        currentPage++;
+        paginateTable();
+      }
+    };
+
+    window.prevPage = function () {
+      if (currentPage > 1) {
+        currentPage--;
+        paginateTable();
+      }
+    };
+
+    window.addEventListener("DOMContentLoaded", paginateTable);
+  </script>
+  
+  <!-- ✅ Dark Mode Toggle, AOS, Tilt Init -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      AOS.init({ once: true, duration: 1000 });
+
+      VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+        max: 15,
+        speed: 400,
+        glare: true,
+        "max-glare": 0.2
+      });
+
+      const toggle = document.getElementById('darkModeToggle');
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          document.documentElement.classList.toggle('dark');
+          const isDark = document.documentElement.classList.contains('dark');
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          toggle.innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+        toggle.innerText = document.documentElement.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+      }
+
+      const toggleMobile = document.getElementById('darkModeToggleMobile');
+      if (toggleMobile) {
+        toggleMobile.addEventListener('click', () => {
+          document.documentElement.classList.toggle('dark');
+          const isDark = document.documentElement.classList.contains('dark');
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          toggleMobile.innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+        toggleMobile.innerText = document.documentElement.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+      }
+    });
+  </script>
+  
+  <script>
+    AOS.init({ once: true });
+  </script>
+  
+  
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8" /></head>
+<body>
+<div th:fragment="content">
+<style>
+
+/* ══════════════════════════════════════
+   BOOKING HISTORY PAGE
+══════════════════════════════════════ */
+
+.bh-page { background: var(--surface); min-height: 70vh; }
+
+/* ── HEADER BAND ── */
+.bh-header {
+  background: var(--ink);
+  padding: 44px 32px 80px;
+  position: relative; overflow: hidden;
+}
+.bh-header::before {
+  content: '';
+  position: absolute; top: -80px; right: -80px;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(200,245,60,.1) 0%, transparent 65%);
+  pointer-events: none;
+}
+.bh-header::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 44px;
+  background: var(--surface);
+  clip-path: ellipse(55% 100% at 50% 100%);
+}
+.bh-header-inner {
+  max-width: 900px; margin: 0 auto;
+  position: relative; z-index: 1;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  flex-wrap: wrap; gap: 20px;
+}
+.bh-header h1 {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 700; color: #fff; margin-bottom: 6px;
+}
+.bh-header p { font-size: 14px; color: rgba(255,255,255,.4); }
+
+/* Filter pills */
+.bh-filters {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.filter-pill {
+  padding: 7px 16px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px; cursor: pointer;
+  font-size: 12px; font-weight: 600;
+  color: rgba(255,255,255,.5);
+  transition: all .18s; user-select: none;
+}
+.filter-pill:hover  { border-color: rgba(200,245,60,.4); color: var(--accent); }
+.filter-pill.active { background: rgba(200,245,60,.1); border-color: var(--accent); color: var(--accent); }
+
+/* ── CONTENT WRAP ── */
+.bh-wrap {
+  max-width: 900px; margin: -40px auto 0;
+  padding: 0 24px 80px;
+  position: relative; z-index: 2;
+}
+
+/* ── STATS ROW ── */
+.bh-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+  animation: fadeUp .4s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 2px 12px rgba(10,10,15,.04);
+}
+.stat-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: var(--ink); display: grid; place-items: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.stat-label { font-size: 11px; color: var(--mid); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 2px; }
+.stat-value { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1; }
+
+/* ── EMPTY STATE ── */
+.bh-empty {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 20px; padding: 64px 32px;
+  text-align: center;
+  animation: fadeUp .4s .1s ease both;
+}
+.bh-empty-icon { font-size: 52px; margin-bottom: 16px; }
+.bh-empty h3 {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 8px;
+}
+.bh-empty p { font-size: 14px; color: var(--mid); margin-bottom: 24px; }
+.btn-browse {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent); color: var(--ink);
+  font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  padding: 13px 28px; border-radius: 10px; text-decoration: none;
+  transition: background .18s, transform .15s, box-shadow .2s;
+}
+.btn-browse:hover { background: var(--accent-dim); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,245,60,.3); }
+
+/* ── TICKET CARDS ── */
+.tickets-list {
+  display: flex; flex-direction: column; gap: 18px;
+}
+
+.ticket-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(10,10,15,.05);
+  transition: box-shadow .2s, transform .2s;
+  animation: fadeUp .4s ease both;
+}
+.ticket-card:hover { box-shadow: 0 8px 32px rgba(10,10,15,.1); transform: translateY(-2px); }
+.ticket-card:nth-child(1) { animation-delay: .05s; }
+.ticket-card:nth-child(2) { animation-delay: .10s; }
+.ticket-card:nth-child(3) { animation-delay: .15s; }
+.ticket-card:nth-child(4) { animation-delay: .20s; }
+
+/* Status stripe on left */
+.ticket-card.status-paid     { border-left: 4px solid #22c55e; }
+.ticket-card.status-cancelled { border-left: 4px solid #ef4444; opacity: .85; }
+
+/* Ticket top */
+.tc-top {
+  padding: 20px 24px 18px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; flex-wrap: wrap;
+}
+
+.tc-route {
+  display: flex; align-items: center; gap: 12px;
+  flex: 1; min-width: 200px;
+}
+.tc-city {
+  font-family: 'Space Mono', monospace;
+  font-size: 22px; font-weight: 700; color: var(--ink);
+  line-height: 1;
+}
+.tc-city-name { font-size: 11px; color: var(--mid); font-weight: 500; margin-top: 2px; }
+.tc-route-mid {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  flex: 1;
+}
+.tc-route-line {
+  width: 100%; height: 1.5px;
+  background: linear-gradient(to right, var(--border), var(--accent), var(--border));
+}
+.tc-bus-name { font-size: 10px; color: var(--mid); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+
+.tc-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+}
+.tc-id-badge {
+  font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+  color: var(--mid); background: var(--surface);
+  border: 1px solid var(--border); padding: 4px 10px; border-radius: 7px;
+}
+.tc-status-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+  letter-spacing: .04em;
+}
+.tc-status-pill.paid {
+  background: rgba(22,163,74,.08); border: 1px solid rgba(22,163,74,.25); color: #15803d;
+}
+.tc-status-pill.cancelled {
+  background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.2); color: #dc2626;
+}
+.tc-status-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+}
+.tc-status-dot.blink { animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+/* Ticket meta row */
+.tc-meta {
+  padding: 0 24px 18px;
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 0;
+  border-bottom: 1px dashed var(--border);
+}
+.tc-meta-cell { padding: 10px 0; }
+.tc-meta-cell:not(:last-child) { padding-right: 16px; border-right: 1px solid var(--border); margin-right: 16px; }
+.tc-meta-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--mid); margin-bottom: 4px; }
+.tc-meta-val   { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--ink); }
+
+/* Ticket bottom */
+.tc-bottom {
+  padding: 14px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 10px;
+}
+.tc-fare {
+  display: flex; align-items: baseline; gap: 4px;
+}
+.tc-fare-label { font-size: 11px; color: var(--mid); font-weight: 600; }
+.tc-fare-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 20px; font-weight: 700; color: var(--ink);
+}
+
+.tc-booked-on { font-size: 12px; color: var(--mid); }
+
+/* Cancel button */
+.btn-cancel {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: transparent;
+  border: 1.5px solid rgba(239,68,68,.3);
+  color: #dc2626; font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 600;
+  padding: 8px 16px; border-radius: 9px; cursor: pointer;
+  transition: background .18s, border-color .18s;
+}
+.btn-cancel:hover { background: rgba(239,68,68,.06); border-color: rgba(239,68,68,.6); }
+
+/* Refund notice */
+.refund-notice {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(239,68,68,.06);
+  border: 1px solid rgba(239,68,68,.15);
+  color: #dc2626; font-size: 12px; font-weight: 500;
+  padding: 7px 14px; border-radius: 9px;
+}
+
+/* ── DARK MODE ── */
+.dark .bh-page      { background: #0e0e16; }
+.dark .stat-card    { background: #16161e; border-color: rgba(255,255,255,.07); }
+.dark .stat-label   { color: rgba(255,255,255,.35); }
+.dark .stat-value   { color: #fff; }
+.dark .bh-empty     { background: #16161e; border-color: rgba(255,255,255,.07); }
+.dark .bh-empty h3  { color: #fff; }
+.dark .bh-empty p   { color: rgba(255,255,255,.4); }
+.dark .ticket-card  { background: #16161e; border-color: rgba(255,255,255,.07); }
+.dark .ticket-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+.dark .tc-city      { color: #fff; }
+.dark .tc-city-name { color: rgba(255,255,255,.4); }
+.dark .tc-bus-name  { color: rgba(255,255,255,.35); }
+.dark .tc-id-badge  { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: rgba(255,255,255,.4); }
+.dark .tc-meta      { border-color: rgba(255,255,255,.07); }
+.dark .tc-meta-cell:not(:last-child) { border-color: rgba(255,255,255,.07); }
+.dark .tc-meta-label { color: rgba(255,255,255,.35); }
+.dark .tc-meta-val  { color: #fff; }
+.dark .tc-bottom    { }
+.dark .tc-fare-label { color: rgba(255,255,255,.4); }
+.dark .tc-fare-val  { color: #fff; }
+.dark .tc-booked-on { color: rgba(255,255,255,.35); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+  .bh-header { padding: 32px 20px 70px; }
+  .bh-stats  { grid-template-columns: 1fr 1fr; }
+  .bh-stats .stat-card:last-child { grid-column: 1 / -1; }
+  .tc-meta   { grid-template-columns: repeat(2,1fr); }
+  .tc-meta-cell:nth-child(2):not(:last-child) { border-right: none; margin-right: 0; }
+  .tc-meta-cell:nth-child(1),
+  .tc-meta-cell:nth-child(2) { border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 4px; }
+  .bh-wrap { padding: 0 16px 60px; }
+  .tc-top, .tc-bottom { padding: 16px 18px; }
+  .tc-meta  { padding: 0 18px 14px; }
+}
+
+</style>
+
+<div class="bh-page">
+
+  <!-- Header -->
+  <div class="bh-header">
+    <div class="bh-header-inner">
+      <div>
+        <h1>🎟️ My Bookings</h1>
+        <p>All your GoReserve journeys in one place.</p>
+      </div>
+      <div class="bh-filters">
+        <div class="filter-pill active" onclick="filterTickets('all', this)">All</div>
+        <div class="filter-pill" onclick="filterTickets('paid', this)">Active</div>
+        <div class="filter-pill" onclick="filterTickets('cancelled', this)">Cancelled</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bh-wrap">
+
+    <!-- Stats -->
+    <div class="bh-stats" th:if="${!bookings.isEmpty()}">
+      <div class="stat-card">
+        <div class="stat-icon">🎫</div>
+        <div>
+          <div class="stat-label">Total Bookings</div>
+          <div class="stat-value" th:text="${bookings.size()}">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div>
+          <div class="stat-label">Active Tickets</div>
+          <div class="stat-value"
+               th:text="${#lists.size(bookings.?[payment.paymentStatus == 'PAID'])}">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div>
+          <div class="stat-label">Total Spent</div>
+          <div class="stat-value">
+            ₹<span th:text="${#aggregates.sum(bookings.![fare])}">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="bh-empty" th:if="${bookings.isEmpty()}">
+      <div class="bh-empty-icon">🚌</div>
+      <h3>No bookings yet</h3>
+      <p>You haven't booked any tickets. Start your journey today!</p>
+      <a th:href="@{/userBusList}" class="btn-browse">Browse Buses →</a>
+    </div>
+
+    <!-- Ticket list -->
+    <div class="tickets-list" th:if="${!bookings.isEmpty()}" id="ticketsList">
+
+      <div th:each="booking : ${bookings}"
+           th:classappend="${booking.payment.paymentStatus == 'PAID'} ? 'status-paid' : 'status-cancelled'"
+           th:attr="data-status=${booking.payment.paymentStatus}"
+           class="ticket-card">
+
+        <!-- Top: Route + Status -->
+        <div class="tc-top">
+          <div class="tc-route">
+            <div>
+              <div class="tc-city"
+                   th:text="${#strings.length(booking.routeFrom) > 3}
+                              ? ${#strings.substring(booking.routeFrom,0,3).toUpperCase()}
+                              : ${booking.routeFrom.toUpperCase()}">DEL</div>
+              <div class="tc-city-name" th:text="${booking.routeFrom}">Delhi</div>
+            </div>
+            <div class="tc-route-mid">
+              <div class="tc-route-line"></div>
+              <div class="tc-bus-name" th:text="${booking.bus.busName}">Volvo Express</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="tc-city"
+                   th:text="${#strings.length(booking.routeTo) > 3}
+                              ? ${#strings.substring(booking.routeTo,0,3).toUpperCase()}
+                              : ${booking.routeTo.toUpperCase()}">JAI</div>
+              <div class="tc-city-name" th:text="${booking.routeTo}">Jaipur</div>
+            </div>
+          </div>
+
+          <div class="tc-right">
+            <div class="tc-id-badge">GR-<span th:text="${booking.id}">0000</span></div>
+            <div th:if="${booking.payment.paymentStatus == 'PAID'}"
+                 class="tc-status-pill paid">
+              <span class="tc-status-dot blink"></span> CONFIRMED
+            </div>
+            <div th:if="${booking.payment.paymentStatus == 'CANCELLED'}"
+                 class="tc-status-pill cancelled">
+              <span class="tc-status-dot"></span> CANCELLED
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta row -->
+        <div class="tc-meta">
+          <div class="tc-meta-cell">
+            <div class="tc-meta-label">Journey Date</div>
+            <div class="tc-meta-val" th:text="${booking.bus.busJourneyDate}">—</div>
+          </div>
+          <div class="tc-meta-cell">
+            <div class="tc-meta-label">Departure</div>
+            <div class="tc-meta-val" th:text="${booking.bus.departureTime}">—</div>
+          </div>
+          <div class="tc-meta-cell">
+            <div class="tc-meta-label">Seats</div>
+            <div class="tc-meta-val" th:text="${booking.bookseat}">—</div>
+          </div>
+          <div class="tc-meta-cell">
+            <div class="tc-meta-label">Bus Type</div>
+            <div class="tc-meta-val" th:text="${booking.bus.busType}">—</div>
+          </div>
+        </div>
+
+        <!-- Bottom: Fare + actions -->
+        <div class="tc-bottom">
+          <div>
+            <div class="tc-fare">
+              <span class="tc-fare-label">₹</span>
+              <span class="tc-fare-val" th:text="${booking.fare}">0</span>
+            </div>
+            <div class="tc-booked-on">
+              Booked <span th:text="${booking.bookingDate}">—</span>
+              at <span th:text="${booking.bookingTime}">—</span>
+            </div>
+          </div>
+
+          <!-- Cancel button -->
+          <div th:if="${booking.payment.paymentStatus == 'PAID'}">
+            <form th:action="@{/bookings/cancelBooking}" method="post"
+                  onsubmit="return confirm('Cancel this ticket? Refund will be processed in 3–5 business days.')">
+              <input type="hidden" name="bookingId" th:value="${booking.id}" />
+              <button type="submit" class="btn-cancel">✕ Cancel Ticket</button>
+            </form>
+          </div>
+
+          <!-- Refund notice -->
+          <div th:if="${booking.payment.paymentStatus == 'CANCELLED'}"
+               class="refund-notice">
+            ↩️ Refund in 3–5 business days
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterTickets(status, pill) {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+
+    document.querySelectorAll('.ticket-card').forEach(card => {
+      const cardStatus = card.getAttribute('data-status');
+      if (status === 'all') {
+        card.style.display = '';
+      } else if (status === 'paid') {
+        card.style.display = cardStatus === 'PAID' ? '' : 'none';
+      } else {
+        card.style.display = cardStatus === 'CANCELLED' ? '' : 'none';
+      }
+    });
+  }
+</script>
+
+</div>
+</body>
+</html>

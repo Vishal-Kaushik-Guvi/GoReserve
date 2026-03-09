@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Show Bus</title>
+
+  <!-- ✅ Early Dark Mode Init -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    };
+  </script>
+
+  <!-- ✅ Alpine.js (Dropdowns) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- ✅ AOS Animations -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+
+  <!-- ✅ Navbar Fragment -->
+  <div th:replace="fragments/navbar :: navbar"></div>
+  
+  <!-- Content Fragment -->
+  <div th:fragment="content">
+  
+    <section class="py-16 px-6 max-w-5xl mx-auto">
+<div class="text-center mb-10" data-aos="fade-down">
+  <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+    Plan Your Perfect Bus Journey
+  </h1>
+  <p class="mt-2 text-lg text-gray-700 dark:text-gray-300">
+    Search routes, compare timings, and book seamlessly.
+  </p>
+</div>
+
+      <!-- Search Form -->
+    <form action="/searchBus" method="get"
+      class="bg-white bg-opacity-5 backdrop-blur-sm p-8 rounded-xl shadow-neon-purple mb-10"
+      data-aos="zoom-in">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <label class="block mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">From:</label>
+          <input type="text" id="routeFrom" name="routeFrom"
+            class="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-purple-600 text-black dark:text-white rounded-lg focus:ring-2 focus:ring-purple-400"
+            placeholder="e.g. Delhi" required>
+        </div>
+        <div>
+          <label for="routeTo" class="block mb-2 text-sm font-semibold">To:</label>
+          <input type="text" id="routeTo" name="routeTo"
+            class="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-purple-600 text-black dark:text-white rounded-lg focus:ring-2 focus:ring-purple-400"
+            placeholder="e.g. Mumbai" required>
+        </div>
+      </div>
+
+      <div class="text-center mt-6">
+        <button type="submit"
+          class="px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow-neon-pink hover:scale-105 transition transform duration-300">
+          Search Bus
+        </button>
+      </div>
+    </form>
+
+    <!-- Results -->
+    <div th:if="${buses != null}">
+      <h2 class="text-2xl font-semibold mb-6" data-aos="fade-right">Available Buses</h2>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div th:each="bus : ${buses}" data-aos="zoom-in-up">
+          <div
+            class="bg-white dark:bg-gray-900 bg-opacity-10 backdrop-blur-sm rounded-lg p-6 border border-purple-500 text-gray-900 dark:text-gray-100 shadow-lg hover:shadow-xl transition duration-300">
+            <h3 class="text-xl font-bold mb-2" th:text="${bus.busName}">Bus Name</h3>
+            <p><span class="font-semibold">From:</span> <span th:text="${bus.routeFrom}">Delhi</span></p>
+            <p><span class="font-semibold">To:</span> <span th:text="${bus.routeTo}">Mumbai</span></p>
+            <p><span class="font-semibold">Departure:</span> <span th:text="${bus.departureTime}">10:00 AM</span></p>
+            <p><span class="font-semibold">Arrival:</span> <span th:text="${bus.arrivalTime}">5:00 PM</span></p>
+            <p><span class="font-semibold">Seats:</span> <span th:text="${bus.availableSeats}">30</span></p>
+            <p><span class="font-semibold">Fare:</span> ₹<span th:text="${bus.fare}">800</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <div th:if="${buses != null} and ${buses.size()} == 0" class="mt-8 text-center text-red-300 text-lg" data-aos="fade-in">
+        No buses found for this route.
+      </div>
+    </section>
+  </div>
+  
+  
+  <!-- ✅ Footer -->
+  <footer class="bg-white dark:bg-gray-900 text-center py-4 mt-10 shadow-inner">
+    <p class="text-gray-600 dark:text-gray-300">© 2025 GoReserve. All rights reserved.</p>
+  </footer>
+
+  <!-- ✅ AOS + VanillaTilt -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
+
+  <!-- ✅ Dark Mode Toggle, AOS, Tilt Init -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      AOS.init({ once: true, duration: 1000 });
+
+      VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+        max: 15,
+        speed: 400,
+        glare: true,
+        "max-glare": 0.2
+      });
+
+      const toggle = document.getElementById('darkModeToggle');
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          document.documentElement.classList.toggle('dark');
+          const isDark = document.documentElement.classList.contains('dark');
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          toggle.innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+        toggle.innerText = document.documentElement.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+      }
+
+      const toggleMobile = document.getElementById('darkModeToggleMobile');
+      if (toggleMobile) {
+        toggleMobile.addEventListener('click', () => {
+          document.documentElement.classList.toggle('dark');
+          const isDark = document.documentElement.classList.contains('dark');
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          toggleMobile.innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+        });
+        toggleMobile.innerText = document.documentElement.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+      }
+    });
+  </script>
+  
+  <script>
+    AOS.init({ once: true });
+  </script>
+  
+  
+</body>
+
+</html>

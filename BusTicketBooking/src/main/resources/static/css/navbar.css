@@ -1,0 +1,69 @@
+/* Force body margin to avoid navbar overlap */
+/* Navbar styling */
+.gr-navbar {
+    background: linear-gradient(90deg, #1f4037, #99f2c8);
+    height: 80px;
+    border-bottom: 3px solid #0f2027;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+/* Custom nav-container */
+.nav-container {
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Brand logo */
+.gr-navbar .navbar-brand img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Brand text */
+.gr-navbar .brand-text {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-left: 20px;
+}
+
+/* Navbar buttons */
+.gr-nav-btn {
+    padding: 5px 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #fff;
+    border-radius: 30px;
+    background-color: #28a745;
+    border: 2px solid transparent;
+    transition: all 0.3s ease-in-out;
+}
+
+.gr-nav-btn:hover {
+    background-color: transparent;
+    color: #28a745;
+    border: 2px solid #28a745;
+}
+
+.gr-nav-btn-secondary {
+    background-color: #6c757d;
+}
+
+.gr-nav-btn-secondary:hover {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.gr-nav-btn-danger {
+    background-color: #dc3545;
+}
+
+.gr-nav-btn-danger:hover {
+    color: #dc3545;
+    border-color: #dc3545;
+}
