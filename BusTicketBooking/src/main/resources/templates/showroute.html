@@ -1,171 +1,398 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Show Bus</title>
+<head><meta charset="UTF-8" /></head>
+<body>
+<div th:fragment="content">
+<style>
 
-  <!-- ✅ Early Dark Mode Init -->
-  <script>
-    if (localStorage.getItem('theme') === 'dark') {
-      document.documentElement.classList.add('dark');
-    }
-  </script>
+/* ══════════════════════════════════════
+   SHOW ROUTE PAGE
+══════════════════════════════════════ */
 
-  <!-- ✅ Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <script>
-    tailwind.config = {
-      darkMode: 'class'
-    };
-  </script>
+.sr-page { background: var(--surface); min-height: 70vh; }
 
-  <!-- ✅ Alpine.js (Dropdowns) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+/* ── HERO SEARCH BAND ── */
+.sr-hero {
+  background: var(--ink);
+  padding: 52px 28px 100px;
+  position: relative; overflow: hidden;
+  text-align: center;
+}
+.sr-hero::before {
+  content: '';
+  position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(200,245,60,.12) 0%, transparent 65%);
+  pointer-events: none;
+}
+.sr-hero::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 44px;
+  background: var(--surface);
+  clip-path: ellipse(55% 100% at 50% 100%);
+}
+.sr-hero-inner { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+.sr-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(200,245,60,.1); border: 1px solid rgba(200,245,60,.25);
+  color: var(--accent); font-size: 11px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 6px 14px; border-radius: 20px; margin-bottom: 18px;
+}
+.sr-hero h1 {
+  font-family: 'Space Mono', monospace;
+  font-size: clamp(24px, 4vw, 40px); font-weight: 700; color: #fff;
+  margin-bottom: 10px; line-height: 1.2;
+}
+.sr-hero h1 span { color: var(--accent); }
+.sr-hero p { font-size: 15px; color: rgba(255,255,255,.45); margin-bottom: 36px; }
 
-  <!-- ✅ AOS Animations -->
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
-</head>
+/* ── SEARCH CARD ── */
+.search-card {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  backdrop-filter: blur(12px);
+  border-radius: 18px;
+  padding: 28px 28px 24px;
+  position: relative; z-index: 1;
+  animation: fadeUp .4s ease both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px);} to{opacity:1;transform:translateY(0);} }
 
-<body class="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+.search-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.search-field { display: flex; flex-direction: column; gap: 7px; }
+.search-field label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: rgba(255,255,255,.4);
+}
+.search-input {
+  padding: 13px 16px;
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: 11px;
+  font-size: 15px; font-family: 'DM Sans', sans-serif; color: #fff;
+  outline: none;
+  transition: border-color .18s, background .18s, box-shadow .18s;
+}
+.search-input::placeholder { color: rgba(255,255,255,.25); }
+.search-input:focus {
+  border-color: var(--accent);
+  background: rgba(255,255,255,.11);
+  box-shadow: 0 0 0 3px rgba(200,245,60,.12);
+}
 
-  <!-- ✅ Navbar Fragment -->
-  <div th:replace="fragments/navbar :: navbar"></div>
-  
-  <!-- Content Fragment -->
-  <div th:fragment="content">
-  
-    <section class="py-16 px-6 max-w-5xl mx-auto">
-<div class="text-center mb-10" data-aos="fade-down">
-  <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-    Plan Your Perfect Bus Journey
-  </h1>
-  <p class="mt-2 text-lg text-gray-700 dark:text-gray-300">
-    Search routes, compare timings, and book seamlessly.
-  </p>
-</div>
+.btn-search {
+  width: 100%;
+  background: var(--accent); color: var(--ink);
+  font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  padding: 15px 24px; border: none; border-radius: 12px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  transition: background .18s, transform .15s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.btn-search::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.2) 0%,transparent 55%); pointer-events:none; }
+.btn-search:hover { background: var(--accent-dim); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(200,245,60,.3); }
 
-      <!-- Search Form -->
-    <form action="/searchBus" method="get"
-      class="bg-white bg-opacity-5 backdrop-blur-sm p-8 rounded-xl shadow-neon-purple mb-10"
-      data-aos="zoom-in">
-      <div class="grid md:grid-cols-2 gap-6">
-        <div>
-          <label class="block mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">From:</label>
-          <input type="text" id="routeFrom" name="routeFrom"
-            class="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-purple-600 text-black dark:text-white rounded-lg focus:ring-2 focus:ring-purple-400"
-            placeholder="e.g. Delhi" required>
+/* Route swap icon */
+.search-swap {
+  display: flex; align-items: flex-end; padding-bottom: 8px;
+  justify-content: center;
+}
+.swap-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.5); font-size: 16px;
+  display: grid; place-items: center; cursor: pointer;
+  transition: background .18s, color .18s, transform .2s;
+}
+.swap-btn:hover { background: rgba(200,245,60,.1); color: var(--accent); transform: rotate(180deg); }
+
+/* ── CONTENT WRAP ── */
+.sr-wrap {
+  max-width: 1060px; margin: -44px auto 0;
+  padding: 0 24px 80px;
+  position: relative; z-index: 2;
+}
+
+/* ── RESULTS HEADER ── */
+.results-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  animation: fadeUp .4s .1s ease both;
+}
+.results-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px; font-weight: 700; color: var(--ink);
+}
+.results-count {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(200,245,60,.08); border: 1px solid rgba(200,245,60,.25);
+  color: #5a7a00; font-size: 12px; font-weight: 700;
+  padding: 5px 14px; border-radius: 20px;
+}
+
+/* ── BUS CARDS GRID ── */
+.bus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+.bus-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(10,10,15,.05);
+  transition: box-shadow .2s, transform .2s;
+  animation: fadeUp .4s ease both;
+  border-left: 4px solid var(--accent);
+  display: flex; flex-direction: column;
+}
+.bus-card:nth-child(1) { animation-delay:.05s; }
+.bus-card:nth-child(2) { animation-delay:.10s; }
+.bus-card:nth-child(3) { animation-delay:.15s; }
+.bus-card:nth-child(4) { animation-delay:.20s; }
+.bus-card:nth-child(5) { animation-delay:.25s; }
+.bus-card:nth-child(6) { animation-delay:.30s; }
+.bus-card:hover { box-shadow: 0 10px 36px rgba(10,10,15,.1); transform: translateY(-3px); }
+
+/* Card top */
+.bc-top {
+  padding: 20px 20px 16px;
+  border-bottom: 1px dashed var(--border);
+}
+.bc-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 14px;
+}
+.bc-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 15px; font-weight: 700; color: var(--ink);
+}
+.bc-type {
+  background: var(--ink); color: var(--accent);
+  font-size: 10px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* Route display */
+.bc-route {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.bc-city {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  flex: 1;
+}
+.bc-city.right { text-align: right; }
+.bc-route-mid {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.bc-route-line {
+  width: 100%; height: 1.5px;
+  background: linear-gradient(to right, var(--border), var(--accent), var(--border));
+}
+.bc-distance { font-size: 10px; color: var(--mid); font-weight: 600; }
+
+/* Timings */
+.bc-timings {
+  display: flex; justify-content: space-between;
+  background: var(--surface);
+  border-radius: 10px; padding: 10px 14px;
+}
+.bc-time-block { display: flex; flex-direction: column; gap: 2px; }
+.bc-time-block.right { text-align: right; }
+.bc-time-label { font-size: 9.5px; color: var(--mid); font-weight: 600; letter-spacing: .07em; text-transform: uppercase; }
+.bc-time-val { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; color: var(--ink); }
+
+/* Card bottom */
+.bc-bottom {
+  padding: 14px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex: 1;
+}
+.bc-meta { display: flex; flex-direction: column; gap: 4px; }
+.bc-meta-row { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--mid); }
+.bc-meta-row strong { color: var(--ink); font-weight: 600; }
+.bc-fare {
+  font-family: 'Space Mono', monospace;
+  font-size: 24px; font-weight: 700; color: var(--ink);
+  line-height: 1;
+}
+.bc-fare-label { font-size: 10px; color: var(--mid); text-align: right; margin-bottom: 2px; }
+
+/* Book button */
+.bc-book-wrap { padding: 0 20px 18px; }
+.btn-book {
+  width: 100%;
+  background: var(--ink); color: var(--accent);
+  font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  padding: 13px 20px; border: none; border-radius: 10px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background .18s, transform .15s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.btn-book::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(200,245,60,.12) 0%,transparent 55%); pointer-events:none; }
+.btn-book:hover { background: #1e1e2a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,10,15,.2); }
+
+/* No results */
+.no-results {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 20px; padding: 60px 32px;
+  text-align: center;
+  animation: fadeUp .4s .1s ease both;
+}
+.no-results-icon { font-size: 52px; margin-bottom: 16px; }
+.no-results h3 {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 8px;
+}
+.no-results p { font-size: 14px; color: var(--mid); }
+
+/* ── DARK MODE ── */
+.dark .sr-page        { background: #0e0e16; }
+.dark .sr-hero::after { background: #0e0e16; }
+.dark .sr-wrap .results-title { color: #fff; }
+.dark .results-count  { background: rgba(200,245,60,.07); color: var(--accent); }
+.dark .bus-card       { background: #16161e; border-color: rgba(255,255,255,.07); }
+.dark .bus-card:hover { box-shadow: 0 10px 36px rgba(0,0,0,.3); }
+.dark .bc-name        { color: #fff; }
+.dark .bc-city        { color: #fff; }
+.dark .bc-timings     { background: rgba(255,255,255,.05); }
+.dark .bc-time-label  { color: rgba(255,255,255,.35); }
+.dark .bc-time-val    { color: #fff; }
+.dark .bc-meta-row    { color: rgba(255,255,255,.4); }
+.dark .bc-meta-row strong { color: #fff; }
+.dark .bc-fare        { color: #fff; }
+.dark .bc-fare-label  { color: rgba(255,255,255,.35); }
+.dark .bc-bottom      { border-color: rgba(255,255,255,.07); }
+.dark .no-results     { background: #16161e; border-color: rgba(255,255,255,.07); }
+.dark .no-results h3  { color: #fff; }
+.dark .no-results p   { color: rgba(255,255,255,.4); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .search-grid { grid-template-columns: 1fr; }
+  .sr-hero { padding: 36px 20px 80px; }
+  .sr-wrap { padding: 0 16px 60px; }
+  .bus-grid { grid-template-columns: 1fr; }
+}
+
+</style>
+
+<div class="sr-page">
+
+  <!-- Hero Search -->
+  <div class="sr-hero">
+    <div class="sr-hero-inner">
+      <div class="sr-eyebrow">🔍 Route Search</div>
+      <h1>Find Your <span>Perfect</span> Bus</h1>
+      <p>Search routes, compare timings, and book seamlessly.</p>
+
+      <form action="/searchBus" method="get" class="search-card">
+        <div class="search-grid">
+          <div class="search-field">
+            <label for="routeFrom">From</label>
+            <input class="search-input" type="text" id="routeFrom" name="routeFrom"
+                   placeholder="e.g. Delhi" required
+                   th:value="${param.routeFrom}" />
+          </div>
+          <div class="search-field">
+            <label for="routeTo">To</label>
+            <input class="search-input" type="text" id="routeTo" name="routeTo"
+                   placeholder="e.g. Mumbai" required
+                   th:value="${param.routeTo}" />
+          </div>
         </div>
-        <div>
-          <label for="routeTo" class="block mb-2 text-sm font-semibold">To:</label>
-          <input type="text" id="routeTo" name="routeTo"
-            class="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-purple-600 text-black dark:text-white rounded-lg focus:ring-2 focus:ring-purple-400"
-            placeholder="e.g. Mumbai" required>
-        </div>
-      </div>
-
-      <div class="text-center mt-6">
-        <button type="submit"
-          class="px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow-neon-pink hover:scale-105 transition transform duration-300">
-          Search Bus
-        </button>
-      </div>
-    </form>
-
-    <!-- Results -->
-<div th:if="${buses != null}">
-  <h2 class="text-2xl font-semibold mb-6" data-aos="fade-right">Available Buses</h2>
-  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-    <div th:each="bus : ${buses}" data-aos="zoom-in-up">
-
-      <!-- ✅ Each bus has its own form -->
-      <form th:action="@{/bookings/addBooking(busId=${bus.busId})}" method="post" th:object="${bookingDto}"
-            class="bg-white dark:bg-gray-900 bg-opacity-10 backdrop-blur-sm rounded-lg p-6 border border-purple-500 text-gray-900 dark:text-gray-100 shadow-lg hover:shadow-xl transition duration-300 space-y-2">
-
-        <!-- Bus Info -->
-        <h3 class="text-xl font-bold mb-2" th:text="${bus.busName}">Bus Name</h3>
-        <p><span class="font-semibold">From:</span> <span th:text="${bus.routeFrom}">Delhi</span></p>
-        <p><span class="font-semibold">To:</span> <span th:text="${bus.routeTo}">Mumbai</span></p>
-        <p><span class="font-semibold">Departure:</span> <span th:text="${bus.departureTime}">10:00 AM</span></p>
-        <p><span class="font-semibold">Arrival:</span> <span th:text="${bus.arrivalTime}">5:00 PM</span></p>
-        <p><span class="font-semibold">Seats:</span> <span th:text="${bus.seats}">30</span></p>
-        <p><span class="font-semibold">Fare:</span> ₹<span th:text="${bus.fare}">800</span></p>
-
-        <!-- CSRF Token (if Spring Security is enabled) -->
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-        <!-- Hidden Bus ID -->
-        <input type="hidden" name="busId" th:value="${bus.busId}" />
-
-        <!-- Book Now Button -->
-        <button type="submit"
-          class="w-full mt-3 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-lg transition-transform transform hover:scale-105">
-          🚍 Book Now
+        <button type="submit" class="btn-search">
+          🔍 Search Buses
         </button>
       </form>
-
     </div>
+  </div>
+
+  <div class="sr-wrap">
+
+    <!-- Results -->
+    <div th:if="${buses != null and !buses.isEmpty()}">
+      <div class="results-header">
+        <div class="results-title">Available Buses</div>
+        <div class="results-count">
+          🚌 <span th:text="${buses.size()}">0</span> buses found
+        </div>
+      </div>
+
+      <div class="bus-grid">
+        <div th:each="bus : ${buses}" class="bus-card">
+
+          <div class="bc-top">
+            <div class="bc-header">
+              <div class="bc-name" th:text="${bus.busName}">Volvo Express</div>
+              <div class="bc-type" th:text="${bus.busType}">AC Sleeper</div>
+            </div>
+
+            <div class="bc-route">
+              <div class="bc-city" th:text="${bus.routeFrom}">Delhi</div>
+              <div class="bc-route-mid">
+                <div class="bc-route-line"></div>
+                <span class="bc-distance">🚌 Direct</span>
+              </div>
+              <div class="bc-city right" th:text="${bus.routeTo}">Mumbai</div>
+            </div>
+
+            <div class="bc-timings">
+              <div class="bc-time-block">
+                <div class="bc-time-label">Departure</div>
+                <div class="bc-time-val" th:text="${bus.departureTime}">10:00</div>
+              </div>
+              <div class="bc-time-block right">
+                <div class="bc-time-label">Arrival</div>
+                <div class="bc-time-val" th:text="${bus.arrivalTime}">18:00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bc-bottom">
+            <div class="bc-meta">
+              <div class="bc-meta-row">🪑 <strong th:text="${bus.seats}">40</strong> seats left</div>
+              <div class="bc-meta-row">📅 <strong th:text="${bus.busJourneyDate}">—</strong></div>
+            </div>
+            <div>
+              <div class="bc-fare-label">per seat</div>
+              <div class="bc-fare">₹<span th:text="${bus.fare}">650</span></div>
+            </div>
+          </div>
+
+          <!-- Book Now — POST form -->
+          <div class="bc-book-wrap">
+            <form th:action="@{/bookings/addBooking(busId=${bus.busId})}" method="get">
+              <input type="hidden" name="busId" th:value="${bus.busId}" />
+              <button type="submit" class="btn-book">🚍 Book Now →</button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- No results -->
+    <div th:if="${buses != null and buses.isEmpty()}" class="no-results">
+      <div class="no-results-icon">🔍</div>
+      <h3>No buses found</h3>
+      <p>No buses available for this route. Try a different origin or destination.</p>
+    </div>
+
   </div>
 </div>
 
-      <div th:if="${buses != null} and ${buses.size()} == 0" class="mt-8 text-center text-red-300 text-lg" data-aos="fade-in">
-        No buses found for this route.
-      </div>
-    </section>
-  </div>
-  
-  
-  <!-- ✅ Footer -->
-  <footer class="bg-white dark:bg-gray-900 text-center py-4 mt-10 shadow-inner">
-    <p class="text-gray-600 dark:text-gray-300">© 2025 GoReserve. All rights reserved.</p>
-  </footer>
-
-  <!-- ✅ AOS + VanillaTilt -->
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
-
-  <!-- ✅ Dark Mode Toggle, AOS, Tilt Init -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      AOS.init({ once: true, duration: 1000 });
-
-      VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
-        max: 15,
-        speed: 400,
-        glare: true,
-        "max-glare": 0.2
-      });
-
-      const toggle = document.getElementById('darkModeToggle');
-      if (toggle) {
-        toggle.addEventListener('click', () => {
-          document.documentElement.classList.toggle('dark');
-          const isDark = document.documentElement.classList.contains('dark');
-          localStorage.setItem('theme', isDark ? 'dark' : 'light');
-          toggle.innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-        });
-        toggle.innerText = document.documentElement.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
-      }
-
-      const toggleMobile = document.getElementById('darkModeToggleMobile');
-      if (toggleMobile) {
-        toggleMobile.addEventListener('click', () => {
-          document.documentElement.classList.toggle('dark');
-          const isDark = document.documentElement.classList.contains('dark');
-          localStorage.setItem('theme', isDark ? 'dark' : 'light');
-          toggleMobile.innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
-        });
-        toggleMobile.innerText = document.documentElement.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
-      }
-    });
-  </script>
-  
-  <script>
-    AOS.init({ once: true });
-  </script>
-  
-  
+</div>
 </body>
-
 </html>

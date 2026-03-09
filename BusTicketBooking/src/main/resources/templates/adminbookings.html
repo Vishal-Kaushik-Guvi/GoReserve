@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8" /></head>
+<body>
+<div th:fragment="content">
+<style>
+  .page-hd { margin-bottom: 24px; }
+  .page-hd h1 { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: #fff; }
+  .page-hd p  { font-size: 13px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .bk-search {
+    flex: 1; min-width: 200px;
+    padding: 11px 16px 11px 40px;
+    background: var(--ink-3);
+    border: 1.5px solid rgba(255,255,255,.08);
+    border-radius: 11px; color: #fff;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+    transition: border-color .18s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.3)' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 14px center;
+  }
+  .bk-search::placeholder { color: rgba(255,255,255,.25); }
+  .bk-search:focus { border-color: var(--accent); }
+
+  .count-chip {
+    background: rgba(200,245,60,.08); border: 1px solid rgba(200,245,60,.2);
+    color: var(--accent); font-size: 12px; font-weight: 700;
+    padding: 6px 14px; border-radius: 20px; white-space: nowrap;
+  }
+
+  /* Filter pills */
+  .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid rgba(255,255,255,.1);
+    background: rgba(255,255,255,.04); color: rgba(255,255,255,.5);
+    transition: all .18s;
+  }
+  .pill.active { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+  .pill:hover:not(.active) { background: rgba(255,255,255,.08); color: #fff; }
+
+  .table-card { background: var(--ink-3); border: 1px solid rgba(255,255,255,.06); border-radius: 16px; overflow: hidden; }
+  .table-wrap  { overflow-x: auto; }
+
+  .badge.pending { background: rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.25); color:#fbbf24; }
+
+  .empty-cell { text-align: center; padding: 52px !important; color: rgba(255,255,255,.3); font-size: 14px; }
+
+  .route-arrow { color: rgba(255,255,255,.3); margin: 0 4px; }
+</style>
+
+<div class="page-hd fade-up">
+  <h1>🎫 All Bookings</h1>
+  <p>Every booking across the GoReserve platform.</p>
+</div>
+
+<div class="toolbar fade-up-1">
+  <input class="bk-search" type="text" placeholder="Search by user, route, ID…"
+         oninput="filterBookings(this.value)" />
+  <div class="filter-pills">
+    <span class="pill active" onclick="filterByStatus('ALL', this)">All</span>
+    <span class="pill" onclick="filterByStatus('PAID', this)">Paid</span>
+    <span class="pill" onclick="filterByStatus('PENDING', this)">Pending</span>
+    <span class="pill" onclick="filterByStatus('CANCELLED', this)">Cancelled</span>
+  </div>
+  <div class="count-chip">
+    🎫 <span id="bkCount" th:text="${bookings != null ? bookings.size() : 0}">0</span> bookings
+  </div>
+</div>
+
+<div class="table-card fade-up-2">
+  <div class="table-wrap">
+    <table class="a-table" id="bookingsTable">
+      <thead>
+        <tr>
+          <th>Booking ID</th>
+          <th>User</th>
+          <th>Route</th>
+          <th>Date</th>
+          <th>Seats</th>
+          <th>Fare</th>
+          <th>Payment Mode</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="bookingsBody">
+        <tr th:each="booking : ${bookings}"
+            th:attr="data-search=${'GR-' + booking.id + ' ' + booking.user.email + ' ' + booking.routeFrom + ' ' + booking.routeTo},
+                     data-status=${booking.payment != null ? booking.payment.paymentStatus : 'PENDING'}">
+
+          <td class="mono" th:text="'GR-' + ${booking.id}">GR-1</td>
+
+          <td>
+            <div style="font-weight:600;color:#fff;font-size:13px;" th:text="${booking.user.name}">User</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.4);" th:text="${booking.user.email}">email</div>
+          </td>
+
+          <td>
+            <span th:text="${booking.routeFrom}">Delhi</span>
+            <span class="route-arrow">→</span>
+            <span th:text="${booking.routeTo}">Jaipur</span>
+          </td>
+
+          <td class="mono" th:text="${booking.bookingDate}">—</td>
+          <td class="mono" th:text="${booking.bookseat}">1</td>
+          <td class="mono" th:text="'₹' + ${booking.fare}">₹0</td>
+
+          <td>
+            <span th:if="${booking.payment != null}" 
+                  th:text="${booking.payment.paymentMode ?: '—'}"
+                  style="font-size:12px;color:rgba(255,255,255,.6);">—</span>
+            <span th:if="${booking.payment == null}" style="color:rgba(255,255,255,.3);font-size:12px;">—</span>
+          </td>
+
+          <td>
+            <span th:if="${booking.payment != null and booking.payment.paymentStatus == 'PAID'}"
+                  class="badge paid"><span class="badge-dot"></span> PAID</span>
+            <span th:if="${booking.payment != null and booking.payment.paymentStatus == 'CANCELLED'}"
+                  class="badge cancelled"><span class="badge-dot"></span> CANCELLED</span>
+            <span th:if="${booking.payment == null}"
+                  class="badge pending"><span class="badge-dot"></span> PENDING</span>
+          </td>
+        </tr>
+
+        <tr th:if="${bookings == null or bookings.isEmpty()}">
+          <td colspan="8" class="empty-cell">No bookings found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let currentStatus = 'ALL';
+  let currentQuery  = '';
+
+  function applyFilters() {
+    const rows = document.querySelectorAll('#bookingsBody tr[data-search]');
+    let visible = 0;
+    rows.forEach(r => {
+      const matchQ = r.getAttribute('data-search').toLowerCase().includes(currentQuery.toLowerCase());
+      const status = r.getAttribute('data-status') || 'PENDING';
+      const matchS = currentStatus === 'ALL' || status === currentStatus;
+      const show = matchQ && matchS;
+      r.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    document.getElementById('bkCount').textContent = visible;
+  }
+
+  function filterBookings(q) { currentQuery = q; applyFilters(); }
+
+  function filterByStatus(status, el) {
+    currentStatus = status;
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    applyFilters();
+  }
+</script>
+
+</div>
+</body>
+</html>

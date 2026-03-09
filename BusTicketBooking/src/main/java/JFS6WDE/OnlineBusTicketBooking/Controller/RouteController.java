@@ -1,13 +1,10 @@
 package JFS6WDE.OnlineBusTicketBooking.Controller;
-
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import JFS6WDE.OnlineBusTicketBooking.Entities.Bus;
 import JFS6WDE.OnlineBusTicketBooking.Services.BusServiceImpl;
 
@@ -18,8 +15,11 @@ public class RouteController {
     private BusServiceImpl busService;
 
     @GetMapping("/showRoute")
-    public String showSearchBusPage() {
-        return "showroute";
+    public String showSearchBusPage(Model model) {
+        model.addAttribute("pageTitle", "Search Buses - GoReserve");
+        model.addAttribute("body", "showroute");
+        model.addAttribute("fullWidth", true);
+        return "layout";
     }
 
     @GetMapping("/searchBus")
@@ -28,6 +28,9 @@ public class RouteController {
                             Model model) {
         List<Bus> buses = busService.findByRouteFromAndRouteTo(routeFrom, routeTo);
         model.addAttribute("buses", buses);
-        return "showroute";
+        model.addAttribute("pageTitle", "Search Results - GoReserve");
+        model.addAttribute("body", "showroute");
+        model.addAttribute("fullWidth", true);
+        return "layout";
     }
 }

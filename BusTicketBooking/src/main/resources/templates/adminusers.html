@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8" /></head>
+<body>
+<div th:fragment="content">
+<style>
+  .page-hd {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 14px;
+  }
+  .page-hd h1 { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: #fff; }
+  .page-hd p  { font-size: 13px; color: rgba(255,255,255,.4); margin-top: 2px; }
+
+  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .usr-search {
+    flex: 1; min-width: 200px;
+    padding: 11px 16px 11px 40px;
+    background: var(--ink-3);
+    border: 1.5px solid rgba(255,255,255,.08);
+    border-radius: 11px; color: #fff;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+    transition: border-color .18s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.3)' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 14px center;
+  }
+  .usr-search::placeholder { color: rgba(255,255,255,.25); }
+  .usr-search:focus { border-color: var(--accent); }
+  .count-chip {
+    background: rgba(200,245,60,.08); border: 1px solid rgba(200,245,60,.2);
+    color: var(--accent); font-size: 12px; font-weight: 700;
+    padding: 6px 14px; border-radius: 20px; white-space: nowrap;
+  }
+
+  /* User avatar */
+  .u-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--ink); border: 2px solid rgba(200,245,60,.3);
+    display: inline-grid; place-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; font-weight: 700; color: var(--accent);
+    flex-shrink: 0;
+  }
+  .u-cell { display: flex; align-items: center; gap: 10px; }
+  .u-name { font-weight: 600; color: #fff; font-size: 13.5px; }
+  .u-email { font-size: 11.5px; color: rgba(255,255,255,.4); margin-top: 1px; }
+
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+    letter-spacing: .04em; text-transform: uppercase;
+  }
+  .role-badge.admin { background: rgba(200,245,60,.1); border:1px solid rgba(200,245,60,.25); color:var(--accent); }
+  .role-badge.user  { background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.5); }
+
+  .bookings-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+  .bookings-bar {
+    height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,.08);
+    margin-top: 4px; overflow: hidden; min-width: 60px;
+  }
+  .bookings-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+
+  .table-card {
+    background: var(--ink-3);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 16px; overflow: hidden;
+  }
+  .table-wrap { overflow-x: auto; }
+
+  .empty-cell {
+    text-align: center; padding: 52px !important;
+    color: rgba(255,255,255,.3); font-size: 14px;
+  }
+</style>
+
+<div class="page-hd fade-up">
+  <div>
+    <h1>👥 User Management</h1>
+    <p>All registered users and their booking activity.</p>
+  </div>
+</div>
+
+<div class="toolbar fade-up-1">
+  <input class="usr-search" type="text" placeholder="Search by name or email…"
+         oninput="filterUsers(this.value)" />
+  <div class="count-chip">
+    👥 <span id="userCount" th:text="${users != null ? users.size() : 0}">0</span> users
+  </div>
+</div>
+
+<div class="table-card fade-up-2">
+  <div class="table-wrap">
+    <table class="a-table" id="usersTable">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Mobile</th>
+          <th>Bookings</th>
+          <th>Total Spent</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="usersBody">
+        <tr th:each="user : ${users}"
+            th:attr="data-search=${user.firstName + ' ' + user.lastName + ' ' + user.email}">
+          <td>
+            <div class="u-cell">
+              <div class="u-avatar"
+                   th:text="${#strings.substring(user.firstName, 0, 1).toUpperCase()}">U</div>
+              <div>
+                <div class="u-name" th:text="${user.firstName + ' ' + user.lastName}">User Name</div>
+                <div class="u-email" th:text="${user.email}">user@mail.com</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="role-badge user">USER</span>
+          </td>
+          <td class="mono" th:text="${user.id}">—</td>
+          <td>
+            <div class="bookings-count">—</div>
+          </td>
+          <td class="mono">—</td>
+          <td>
+            <span class="badge active">Active</span>
+          </td>
+        </tr>
+        <tr th:if="${users == null or users.isEmpty()}">
+          <td colspan="6" class="empty-cell">No users registered yet.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  function filterUsers(q) {
+    const rows  = document.querySelectorAll('#usersBody tr[data-search]');
+    let visible = 0;
+    rows.forEach(r => {
+      const match = r.getAttribute('data-search').
