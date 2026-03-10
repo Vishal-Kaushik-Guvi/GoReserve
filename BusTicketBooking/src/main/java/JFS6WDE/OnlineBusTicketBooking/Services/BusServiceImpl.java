@@ -1,11 +1,14 @@
 package JFS6WDE.OnlineBusTicketBooking.Services;
 
 
+import JFS6WDE.OnlineBusTicketBooking.Entities.Booking;
 import JFS6WDE.OnlineBusTicketBooking.Entities.Bus;
 import JFS6WDE.OnlineBusTicketBooking.Exception.AdminException;
 import JFS6WDE.OnlineBusTicketBooking.Exception.ResourceNotFound;
+import JFS6WDE.OnlineBusTicketBooking.Repository.ArchivedBookingRepository;
+import JFS6WDE.OnlineBusTicketBooking.Repository.BookingRepository;
 import JFS6WDE.OnlineBusTicketBooking.Repository.BusRepository;
-
+import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,12 @@ import java.util.Optional;
 public class BusServiceImpl implements BusService {
     @Autowired
     private BusRepository busRepo;
+    
+    @Autowired
+    private ArchivedBookingRepository abrRepo;
+    
+    @Autowired
+    private BookingRepository bookingRepository;
     
     
     @Override
@@ -59,16 +68,29 @@ public class BusServiceImpl implements BusService {
         return busRepo.save(existingBus);
     }
 
-    @Override
-    public void deleteBus(long busId) throws ResourceNotFound, AdminException {
-        Optional<Bus> bus = busRepo.findById(busId);
+ // Replace your deleteBus method in BusServiceImpl.java with this:
 
-        if (bus.isPresent()) {
-           busRepo.deleteById(busId);
-     }  else{
-        throw new ResourceNotFound("Bus Not Found with id: " +busId);
-     }
-}
+    @Override
+    @Transactional
+    public void deleteBus(long busId) throws ResourceNotFound, AdminException {
+        Bus bus = busRepo.findById(busId)
+            .orElseThrow(() -> new ResourceNotFound("Bus Not Found with id: " + busId));
+
+        // 1. Null out bus reference in archived bookings (so FK constraint doesn't block)
+        abrRepo.findAll().forEach(archived -> {
+            if (archived.getBus() != null && archived.getBus().getBusId() == busId) {
+                archived.setBus(null);
+                abrRepo.save(archived);
+            }
+        });
+
+        // 2. Delete active bookings linked to this bus (cascades payment too if configured)
+        List<Booking> activeBookings = bookingRepository.findByBus(bus);
+        bookingRepository.deleteAll(activeBookings);
+
+        // 3. Now safe to delete the bus
+        busRepo.deleteById(busId);
+    }
 
     @Override
     public List<Bus> findByRouteFromAndRouteTo(String routeFrom, String routeTo) {

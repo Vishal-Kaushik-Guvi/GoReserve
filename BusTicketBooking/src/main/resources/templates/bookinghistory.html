@@ -136,8 +136,10 @@
 .ticket-card:nth-child(4) { animation-delay: .20s; }
 
 /* Status stripe on left */
-.ticket-card.status-paid     { border-left: 4px solid #22c55e; }
+.ticket-card.status-paid      { border-left: 4px solid #22c55e; }
 .ticket-card.status-cancelled { border-left: 4px solid #ef4444; opacity: .85; }
+.ticket-card.status-pending   { border-left: 4px solid #f59e0b; }
+.ticket-card.status-departed  { border-left: 4px solid #6b7280; opacity: .75; }
 
 /* Ticket top */
 .tc-top {
@@ -291,6 +293,7 @@
       <div class="bh-filters">
         <div class="filter-pill active" onclick="filterTickets('all', this)">All</div>
         <div class="filter-pill" onclick="filterTickets('paid', this)">Active</div>
+        <div class="filter-pill" onclick="filterTickets('departed', this)">Departed</div>
         <div class="filter-pill" onclick="filterTickets('cancelled', this)">Cancelled</div>
       </div>
     </div>
@@ -311,8 +314,7 @@
         <div class="stat-icon">✅</div>
         <div>
           <div class="stat-label">Active Tickets</div>
-          <div class="stat-value"
-               th:text="${#lists.size(bookings.?[payment.paymentStatus == 'PAID'])}">0</div>
+          <div class="stat-value" id="activeCount">0</div>
         </div>
       </div>
       <div class="stat-card">
@@ -338,8 +340,10 @@
     <div class="tickets-list" th:if="${!bookings.isEmpty()}" id="ticketsList">
 
       <div th:each="booking : ${bookings}"
-           th:classappend="${booking.payment.paymentStatus == 'PAID'} ? 'status-paid' : 'status-cancelled'"
-           th:attr="data-status=${booking.payment.paymentStatus}"
+           th:classappend="${booking.payment != null and booking.payment.paymentStatus == 'PAID'} ? 'status-paid' : (${booking.payment != null and booking.payment.paymentStatus == 'CANCELLED'} ? 'status-cancelled' : 'status-pending')"
+           th:attr="data-status=${booking.payment != null ? booking.payment.paymentStatus : 'PENDING'},
+                    data-journey=${booking.bus.busJourneyDate},
+                    data-deptime=${booking.bus.departureTime}"
            class="ticket-card">
 
         <!-- Top: Route + Status -->
@@ -367,13 +371,17 @@
 
           <div class="tc-right">
             <div class="tc-id-badge">GR-<span th:text="${booking.id}">0000</span></div>
-            <div th:if="${booking.payment.paymentStatus == 'PAID'}"
-                 class="tc-status-pill paid">
-              <span class="tc-status-dot blink"></span> CONFIRMED
+            <!-- Status pill — set dynamically by JS based on IST time -->
+            <div class="tc-status-pill paid" th:if="${booking.payment != null and booking.payment.paymentStatus == 'PAID'}">
+              <span class="tc-status-dot blink"></span>
+              <span class="status-label-text">CONFIRMED</span>
             </div>
-            <div th:if="${booking.payment.paymentStatus == 'CANCELLED'}"
-                 class="tc-status-pill cancelled">
+            <div class="tc-status-pill cancelled" th:if="${booking.payment != null and booking.payment.paymentStatus == 'CANCELLED'}">
               <span class="tc-status-dot"></span> CANCELLED
+            </div>
+            <div class="tc-status-pill" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:#b45309;"
+                 th:if="${booking.payment == null}">
+              <span class="tc-status-dot" style="background:#b45309;"></span> PENDING
             </div>
           </div>
         </div>
@@ -411,17 +419,19 @@
             </div>
           </div>
 
-          <!-- Cancel button -->
-          <div th:if="${booking.payment.paymentStatus == 'PAID'}">
+          <!-- Cancel button — only for PAID + not departed (JS hides if departed) -->
+          <div th:if="${booking.payment != null and booking.payment.paymentStatus == 'PAID'}"
+               class="cancel-action">
             <form th:action="@{/bookings/cancelBooking}" method="post"
                   onsubmit="return confirm('Cancel this ticket? Refund will be processed in 3–5 business days.')">
               <input type="hidden" name="bookingId" th:value="${booking.id}" />
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
               <button type="submit" class="btn-cancel">✕ Cancel Ticket</button>
             </form>
           </div>
 
           <!-- Refund notice -->
-          <div th:if="${booking.payment.paymentStatus == 'CANCELLED'}"
+          <div th:if="${booking.payment != null and booking.payment.paymentStatus == 'CANCELLED'}"
                class="refund-notice">
             ↩️ Refund in 3–5 business days
           </div>
@@ -433,21 +443,104 @@
 </div>
 
 <script>
+  // Get current IST time
+  function nowIST() {
+    // IST = UTC+5:30
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    return new Date(utc + 5.5 * 3600000);
+  }
+
+  // Check if a bus has already departed based on journeyDate + departureTime
+  // journeyDate: "2025-06-15", depTime: "14:30" or "14:30:00"
+  function hasDeparted(journeyDate, depTime) {
+    if (!journeyDate || !depTime) return false;
+    try {
+      const timePart = depTime.length > 5 ? depTime.slice(0, 5) : depTime; // "HH:MM"
+      const depDateTime = new Date(journeyDate + 'T' + timePart + ':00+05:30');
+      return nowIST() > depDateTime;
+    } catch(e) { return false; }
+  }
+
+  // On page load: mark departed cards, update active count, set "DEPARTED" badge
+  function initCards() {
+    const cards = document.querySelectorAll('.ticket-card');
+    let activeCount = 0;
+
+    cards.forEach(card => {
+      const status    = card.getAttribute('data-status');   // PAID / CANCELLED / PENDING
+      const journey   = card.getAttribute('data-journey');  // 2025-06-15
+      const depTime   = card.getAttribute('data-deptime');  // 14:30
+      const departed  = hasDeparted(journey, depTime);
+
+      if (status === 'PAID' && departed) {
+        // Bus already left — show "DEPARTED" badge, hide cancel button, mark card
+        card.classList.remove('status-paid');
+        card.classList.add('status-departed');
+        card.setAttribute('data-display-status', 'departed');
+
+        const pill = card.querySelector('.tc-status-pill.paid');
+        if (pill) {
+          pill.style.background = 'rgba(107,114,128,.1)';
+          pill.style.border     = '1px solid rgba(107,114,128,.3)';
+          pill.style.color      = '#6b7280';
+          const dot = pill.querySelector('.tc-status-dot');
+          if (dot) { dot.classList.remove('blink'); dot.style.background = '#6b7280'; }
+          const lbl = pill.querySelector('.status-label-text');
+          if (lbl) lbl.textContent = 'DEPARTED';
+        }
+
+        // Hide cancel button
+        const cancelDiv = card.querySelector('.cancel-action');
+        if (cancelDiv) cancelDiv.style.display = 'none';
+
+        // Show departed notice
+        const bottom = card.querySelector('.tc-bottom > div:last-child');
+        const notice = document.createElement('div');
+        notice.className = 'refund-notice';
+        notice.style.cssText = 'background:rgba(107,114,128,.08);border-color:rgba(107,114,128,.2);color:#6b7280;';
+        notice.textContent = '🚌 This bus has already departed';
+        if (bottom && !bottom.querySelector('.cancel-action')) {
+          bottom.appendChild(notice);
+        }
+
+      } else if (status === 'PAID' && !departed) {
+        card.setAttribute('data-display-status', 'active');
+        activeCount++;
+      } else {
+        card.setAttribute('data-display-status', status.toLowerCase());
+      }
+    });
+
+    // Update active count in stats
+    const el = document.getElementById('activeCount');
+    if (el) el.textContent = activeCount;
+  }
+
+  // Filter: all / active (PAID + not departed) / cancelled / departed
   function filterTickets(status, pill) {
     document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
     pill.classList.add('active');
 
     document.querySelectorAll('.ticket-card').forEach(card => {
-      const cardStatus = card.getAttribute('data-status');
+      const ds = card.getAttribute('data-display-status') || 'pending';
       if (status === 'all') {
         card.style.display = '';
       } else if (status === 'paid') {
-        card.style.display = cardStatus === 'PAID' ? '' : 'none';
+        // "Active" pill → show only PAID + not departed
+        card.style.display = ds === 'active' ? '' : 'none';
+      } else if (status === 'cancelled') {
+        card.style.display = ds === 'cancelled' ? '' : 'none';
+      } else if (status === 'departed') {
+        card.style.display = ds === 'departed' ? '' : 'none';
       } else {
-        card.style.display = cardStatus === 'CANCELLED' ? '' : 'none';
+        card.style.display = '';
       }
     });
   }
+
+  // Run on load
+  document.addEventListener('DOMContentLoaded', initCards);
 </script>
 
 </div>

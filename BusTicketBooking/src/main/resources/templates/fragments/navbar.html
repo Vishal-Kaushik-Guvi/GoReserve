@@ -22,9 +22,11 @@
           Services <i class="dropdown-arrow">▾</i>
         </button>
         <div class="dropdown-menu">
-          <a href="/book-ticket" class="dropdown-item"><span class="item-icon">🎫</span>Book Ticket</a>
-          <a href="/showRoute" class="dropdown-item"><span class="item-icon">🗺️</span>Find Bus</a>
-          <a th:href="@{/bookings/booking-history}" class="dropdown-item"><span class="item-icon">📋</span>Booking History</a>
+          <div class="dropdown-menu-inner">
+            <a href="/book-ticket" class="dropdown-item"><span class="item-icon">🎫</span>Book Ticket</a>
+            <a href="/showRoute" class="dropdown-item"><span class="item-icon">🗺️</span>Find Bus</a>
+            <a th:href="@{/bookings/booking-history}" class="dropdown-item"><span class="item-icon">📋</span>Booking History</a>
+          </div>
         </div>
       </div>
 

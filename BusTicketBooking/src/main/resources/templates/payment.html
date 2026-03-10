@@ -632,7 +632,7 @@
                 <div class="f-field">
                   <label for="cardNumber">Card Number</label>
                   <input class="f-input" type="text" id="cardNumber" th:field="*{cardNumber}"
-                         placeholder="0000  0000  0000  0000"
+                         placeholder="0000 0000 0000 0000"
                          maxlength="19" autocomplete="cc-number"
                          oninput="onCardNum(this)" />
                 </div>
@@ -883,12 +883,21 @@
 
   /* ── Card number format + brand detect ── */
   function onCardNum(input) {
-    let v = input.value.replace(/\D/g, '').slice(0,16);
-    input.value = v.replace(/(.{4})/g, '$1  ').trim();
-    const disp = v.padEnd(16,'•').replace(/(.{4})/g,'$1 ').trim();
-    document.getElementById('cNumber').textContent = disp;
-    const first = v[0];
-    const brand = first === '4' ? 'VISA' : first === '5' ? 'MASTERCARD' : v.startsWith('60') || v.startsWith('65') ? 'RuPay' : v.startsWith('34') || v.startsWith('37') ? 'AMEX' : 'VISA';
+    // Strip all non-digits, cap at 16
+    let v = input.value.replace(/\D/g, '').slice(0, 16);
+    // Format with single space every 4 digits → max 19 chars (16 + 3 spaces)
+    input.value = v.replace(/(.{4})(?=.)/g, '$1 ');
+    // Display on card: pad to 16 with bullets, group with spaces
+    const padded = v.padEnd(16, '•');
+    document.getElementById('cNumber').textContent =
+      padded.slice(0,4) + '  ' + padded.slice(4,8) + '  ' + padded.slice(8,12) + '  ' + padded.slice(12,16);
+    // Brand detection
+    const first2 = v.slice(0, 2);
+    const brand = v[0] === '4' ? 'VISA'
+      : v[0] === '5' ? 'MASTERCARD'
+      : first2 === '60' || first2 === '65' ? 'RuPay'
+      : v.startsWith('34') || v.startsWith('37') ? 'AMEX'
+      : 'VISA';
     document.getElementById('cBrand').textContent = brand;
   }
 

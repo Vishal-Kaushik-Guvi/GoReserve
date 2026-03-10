@@ -9,4 +9,6 @@ import JFS6WDE.OnlineBusTicketBooking.Entities.User;
 
 public interface ArchivedBookingRepository extends JpaRepository<ArchivedBooking, Long> {
     List<ArchivedBooking> findByUser(User user);
+    
+    List<ArchivedBooking> findByBusBusId(long busId);  // ← added for deleteBus fix
 }
