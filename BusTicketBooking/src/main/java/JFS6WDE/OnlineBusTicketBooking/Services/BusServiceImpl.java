@@ -37,8 +37,8 @@ public class BusServiceImpl implements BusService {
     // Admin methods
     @Override
     public Bus createBus(Bus bus) throws ResourceNotFound, AdminException {
-    	int price = bus.getFare();
-       bus.setFare(bus.getDistance()*2*price);
+    	int basePrice = bus.getFare();
+       bus.setFare(basePrice*bus.getDistance());
        return busRepo.save(bus);
     }
 

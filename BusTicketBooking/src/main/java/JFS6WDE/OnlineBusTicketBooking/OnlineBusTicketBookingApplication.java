@@ -12,4 +12,4 @@ public class OnlineBusTicketBookingApplication {
 		System.out.println("Go-Reserve is Running... ");
 	}
 
-}  
+}

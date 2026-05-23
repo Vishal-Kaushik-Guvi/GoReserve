@@ -51,7 +51,7 @@ public class SpringSecurity {
             .authorizeHttpRequests(auth -> auth
                 // Allow public resources
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/static/**").permitAll()
-                .requestMatchers("/", "/index", "/register/**", "/browseBuses", "/about", "/login").permitAll()
+                .requestMatchers("/", "/index", "/register/**", "/browseBuses", "/about","/verify-otp", "/login").permitAll()
 
                 // Admin-only section
                 .requestMatchers("/adminBusList", "/addBus", "/updateBus", "/deleteBus").hasRole("ADMIN")
