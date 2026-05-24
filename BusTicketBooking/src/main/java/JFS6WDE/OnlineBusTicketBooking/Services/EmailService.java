@@ -11,22 +11,13 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendOtp(String email,
-                        String otp) {
-
-        SimpleMailMessage message =
-                new SimpleMailMessage();
-
+    public void sendOtp(String email, String otp) {
+        SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-
-        message.setSubject(
-                "OTP Verification"
-        );
-
-        message.setText(
-                "Your OTP is: " + otp
-        );
-
+        message.setSubject("Your GoReserve OTP");
+        message.setText("Your OTP for registration is: " + otp 
+                      + "\n\nThis OTP is valid for 5 minutes."
+                      + "\n\n— GoReserve Team");
         mailSender.send(message);
     }
 }

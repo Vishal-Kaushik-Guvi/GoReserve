@@ -1,141 +1,568 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
-
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Verify OTP - GoReserve</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Verify OTP</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap -->
-    <link href=
-"https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0a0a0f;
+      --surface: #f5f4f0;
+      --accent: #c8f53c;
+      --accent-dim: #b0d832;
+      --mid: #6b6b7a;
+      --border: rgba(10,10,15,0.12);
+    }
 
-    <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body{
-            background: #f5f7fa;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--surface);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-        .otp-card{
-            width: 100%;
-            max-width: 420px;
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
+    /* noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
 
-        .otp-title{
-            text-align: center;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
 
-        .otp-subtitle{
-            text-align: center;
-            color: gray;
-            margin-bottom: 30px;
-        }
+    /* ── LEFT PANEL ── */
+    .left-panel {
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 56px 64px;
+      position: relative;
+      overflow: hidden;
+    }
 
-        .otp-input{
-            height: 50px;
-            text-align: center;
-            font-size: 20px;
-            letter-spacing: 5px;
-        }
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: -120px;
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, rgba(200,245,60,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
 
-        .verify-btn{
-            height: 50px;
-            font-weight: bold;
-        }
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; right: -80px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(200,245,60,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
 
-    </style>
+    /* ── BRAND ── */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 48px;
+    }
 
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+    }
+
+    .brand-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    /* ── STEP INDICATOR ── */
+    .step-indicator {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 32px;
+    }
+
+    .step-dot {
+      height: 4px;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    .step-dot.done {
+      background: rgba(200,245,60,0.4);
+      width: 24px;
+    }
+
+    .step-dot.active {
+      background: var(--accent);
+      width: 24px;
+    }
+
+    .step-dot.pending {
+      background: rgba(255,255,255,0.15);
+      width: 8px;
+    }
+
+    /* ── HEADLINE ── */
+    .headline {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(26px, 3vw, 38px);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .headline span { color: var(--accent); }
+
+    .subline {
+      font-size: 14px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 36px;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .subline strong {
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+    }
+
+    /* ── ALERT MESSAGES ── */
+    .alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 24px;
+      animation: slideIn 0.4s ease forwards;
+    }
+
+    .alert-success {
+      background: rgba(200,245,60,0.1);
+      border: 1px solid rgba(200,245,60,0.3);
+      color: var(--accent);
+    }
+
+    .alert-error {
+      background: rgba(255,80,80,0.1);
+      border: 1px solid rgba(255,80,80,0.25);
+      color: #ff6b6b;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── OTP INPUT GROUP ── */
+    .otp-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 10px;
+    }
+
+    .otp-input-wrapper {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .otp-input {
+      width: 100%;
+      padding: 16px 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 26px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .otp-input::placeholder {
+      color: rgba(255,255,255,0.15);
+      letter-spacing: 0.2em;
+      font-size: 20px;
+    }
+
+    .otp-input:focus {
+      border-color: var(--accent);
+      background: rgba(200,245,60,0.05);
+      box-shadow: 0 0 0 3px rgba(200,245,60,0.1);
+    }
+
+    .otp-hint {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    /* ── SUBMIT BUTTON ── */
+    .btn-verify {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: var(--ink);
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-verify::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .btn-verify:hover {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(200,245,60,0.28);
+    }
+
+    .btn-verify:active { transform: translateY(0); }
+
+    /* ── BACK LINK ── */
+    .back-link {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    .back-link a {
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .back-link a:hover { color: var(--accent); }
+
+    /* ── RIGHT PANEL ── */
+    .right-panel {
+      position: relative;
+      overflow: hidden;
+      background: #e8e7e2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+    }
+
+    /* OTP illustration */
+    .otp-illustration {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .envelope-wrap {
+      position: relative;
+      width: 280px;
+      height: 200px;
+      margin: 0 auto 40px;
+    }
+
+    .envelope {
+      width: 280px;
+      height: 180px;
+      background: #fff;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      position: relative;
+      box-shadow: 0 12px 40px rgba(10,10,15,0.1);
+      overflow: hidden;
+    }
+
+    .envelope::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 0; height: 0;
+      border-left: 140px solid transparent;
+      border-right: 140px solid transparent;
+      border-top: 80px solid #f0efe9;
+    }
+
+    .envelope::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 0;
+      border-left: 140px solid var(--ink);
+      border-right: 140px solid var(--ink);
+      border-bottom: 70px solid var(--ink);
+      opacity: 0.05;
+    }
+
+    .envelope-badge {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 52px; height: 52px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 16px rgba(200,245,60,0.4);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { transform: scale(1); box-shadow: 0 4px 16px rgba(200,245,60,0.4); }
+      50%      { transform: scale(1.08); box-shadow: 0 6px 24px rgba(200,245,60,0.6); }
+    }
+
+    /* floating otp digits */
+    .otp-digits {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .digit-box {
+      width: 44px; height: 52px;
+      background: var(--ink);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      box-shadow: 0 4px 12px rgba(10,10,15,0.15);
+      animation: floatDigit 3s ease-in-out infinite;
+    }
+
+    .digit-box:nth-child(1) { animation-delay: 0s; }
+    .digit-box:nth-child(2) { animation-delay: 0.15s; }
+    .digit-box:nth-child(3) { animation-delay: 0.30s; }
+    .digit-box:nth-child(4) { animation-delay: 0.45s; }
+    .digit-box:nth-child(5) { animation-delay: 0.60s; }
+    .digit-box:nth-child(6) { animation-delay: 0.75s; }
+
+    @keyframes floatDigit {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-5px); }
+    }
+
+    .right-info {
+      text-align: center;
+    }
+
+    .right-info h3 {
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .right-info p {
+      font-size: 14px;
+      color: var(--mid);
+      line-height: 1.6;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    /* ── REVEAL ANIMATIONS ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: reveal 0.5s ease forwards;
+    }
+
+    @keyframes reveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal:nth-child(1) { animation-delay: 0.05s; }
+    .reveal:nth-child(2) { animation-delay: 0.12s; }
+    .reveal:nth-child(3) { animation-delay: 0.19s; }
+    .reveal:nth-child(4) { animation-delay: 0.26s; }
+    .reveal:nth-child(5) { animation-delay: 0.33s; }
+    .reveal:nth-child(6) { animation-delay: 0.40s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .page-wrapper { grid-template-columns: 1fr; }
+      .right-panel  { display: none; }
+      .left-panel   { padding: 48px 28px; }
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="otp-card">
+  <div th:replace="fragments/navbar-minimal :: minimal-navbar"></div>
 
-    <h2 class="otp-title">
-        OTP Verification
-    </h2>
+  <div class="page-wrapper">
 
-    <p class="otp-subtitle">
-        Enter the OTP sent to your email
-    </p>
+    <!-- ── LEFT: FORM PANEL ── -->
+    <div class="left-panel">
 
+      <div class="brand reveal">
+        <div class="brand-icon">🚌</div>
+        <span class="brand-name">GoReserve</span>
+      </div>
 
-    <!-- Success Message -->
-    <div th:if="${message}"
-         class="alert alert-success">
+      <!-- Step 2 of 3 active -->
+      <div class="step-indicator reveal">
+        <div class="step-dot done"></div>
+        <div class="step-dot active"></div>
+        <div class="step-dot pending"></div>
+      </div>
 
+      <div class="reveal">
+        <h1 class="headline">Check your<br><span>inbox.</span></h1>
+        <p class="subline">
+          We sent a 6-digit code to<br>
+          <strong th:text="${session.tempUser != null ? session.tempUser.email : 'your email'}">your email</strong>
+        </p>
+      </div>
+
+      <!-- Success message (OTP sent) -->
+      <div th:if="${message}" class="alert alert-success reveal">
+        <span>✓</span>
         <span th:text="${message}"></span>
+      </div>
 
-    </div>
-
-
-    <!-- Error Message -->
-    <div th:if="${error}"
-         class="alert alert-danger">
-
+      <!-- Error message (wrong OTP / session expired) -->
+      <div th:if="${error}" class="alert alert-error reveal">
+        <span>✕</span>
         <span th:text="${error}"></span>
+      </div>
 
-    </div>
+      <!-- OTP Form -->
+      <form th:action="@{/verify-otp}" method="post" class="reveal">
 
+        <input type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}" />
 
-    <!-- OTP FORM -->
-    <form th:action="@{/verify-otp}"
-      method="post">
+        <label class="otp-label" for="otp">Enter OTP</label>
 
-    <!-- CSRF TOKEN -->
-    <input type="hidden"
-           th:name="${_csrf.parameterName}"
-           th:value="${_csrf.token}" />
+        <div class="otp-input-wrapper">
+          <input type="text"
+                 id="otp"
+                 name="otp"
+                 class="otp-input"
+                 placeholder="• • • • • •"
+                 maxlength="6"
+                 autocomplete="one-time-code"
+                 inputmode="numeric"
+                 required
+                 autofocus />
+        </div>
 
-    <div class="mb-4">
+        <p class="otp-hint">OTP expires in 10 minutes</p>
 
-        <input type="text"
-               name="otp"
-               class="form-control otp-input"
-               placeholder="Enter OTP"
-               maxlength="6"
-               required>
-
-    </div>
-
-    <div class="d-grid">
-
-        <button type="submit"
-                class="btn btn-primary verify-btn">
-
-            Verify OTP
-
+        <button type="submit" class="btn-verify">
+          Verify &amp; Continue →
         </button>
 
-    </div>
+      </form>
 
-</form>
-
-
-    <!-- Back To Register -->
-    <div class="text-center mt-4">
-
-        <a th:href="@{/register}">
-            Back to Register
-        </a>
+      <p class="back-link reveal">
+        Wrong email?
+        <a th:href="@{/register}">← Back to register</a>
+      </p>
 
     </div>
 
-</div>
+    <!-- ── RIGHT: VISUAL PANEL ── -->
+    <div class="right-panel">
+      <div class="otp-illustration">
+
+        <div class="envelope-wrap">
+          <div class="envelope">
+            <div class="envelope-badge">✉️</div>
+          </div>
+        </div>
+
+        <div class="otp-digits">
+          <div class="digit-box">3</div>
+          <div class="digit-box">8</div>
+          <div class="digit-box">4</div>
+          <div class="digit-box">7</div>
+          <div class="digit-box">1</div>
+          <div class="digit-box">2</div>
+        </div>
+
+        <div class="right-info">
+          <h3>One-time password</h3>
+          <p>Each code is unique, expires in 10 minutes, and can only be used once.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Auto-format: only allow digits
+    const otpInput = document.getElementById('otp');
+    otpInput.addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    });
+
+    // Auto-submit when 6 digits entered
+    otpInput.addEventListener('input', function () {
+      if (this.value.length === 6) {
+        this.closest('form').submit();
+      }
+    });
+  </script>
 
 </body>
 </html>

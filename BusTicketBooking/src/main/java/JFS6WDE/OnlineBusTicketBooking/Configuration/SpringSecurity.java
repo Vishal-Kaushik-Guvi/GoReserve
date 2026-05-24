@@ -1,7 +1,5 @@
 package JFS6WDE.OnlineBusTicketBooking.Configuration;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,8 +27,6 @@ import java.io.IOException;
 @EnableMethodSecurity
 public class SpringSecurity {
 
-    private static final Logger logger = LoggerFactory.getLogger(SpringSecurity.class);
-
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -42,49 +38,62 @@ public class SpringSecurity {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 🔐 Enable CSRF (recommended for production)
+            // ✅ CSRF enabled, ignore H2 console only
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**") // optional if using H2 DB
+                .ignoringRequestMatchers("/h2-console/**")
             )
 
-            // ✅ Authorization Rules
+            // ✅ Authorization rules
             .authorizeHttpRequests(auth -> auth
-                // Allow public resources
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/static/**").permitAll()
-                .requestMatchers("/", "/index", "/register/**", "/browseBuses", "/about","/verify-otp", "/login").permitAll()
-
-                // Admin-only section
-                .requestMatchers("/adminBusList", "/addBus", "/updateBus", "/deleteBus").hasRole("ADMIN")
-
-
-                // Authenticated users (both USER and ADMIN)
-                .requestMatchers("/book-ticket", "/find-bus", "/booking-history").authenticated()
-
-                // All other requests
+                .requestMatchers(
+                    "/css/**", "/js/**", "/images/**",
+                    "/webjars/**", "/static/**"
+                ).permitAll()
+                .requestMatchers(
+                    "/", "/index",
+                    "/register", "/register/save",
+                    "/verify-otp",                  // ← covers GET + POST
+                    "/browseBuses", "/about", "/login"
+                ).permitAll()
+                .requestMatchers(
+                    "/adminBusList", "/addBus",
+                    "/updateBus", "/deleteBus"
+                ).hasRole("ADMIN")
+                .requestMatchers(
+                    "/book-ticket", "/find-bus",
+                    "/booking-history"
+                ).authenticated()
                 .anyRequest().authenticated()
             )
 
-            // ✅ Custom Login Config
+            // ✅ SESSION FIX — migrates attributes to new session
+            // prevents otp + tempUser being wiped after security events
+            .sessionManagement(session -> session
+                .sessionFixation().migrateSession()
+            )
+
+            // ✅ Custom login
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .successHandler(authenticationSuccessHandler()) // custom redirect logic
+                .successHandler(authenticationSuccessHandler())
                 .permitAll()
                 .failureHandler((request, response, exception) -> {
-                    // Log and redirect on failed login
-                    System.err.println("Authentication failure: " + exception.getMessage());
+                    System.err.println("Login failed: " + exception.getMessage());
                     response.sendRedirect("/login?error");
                 })
             )
 
-            // ✅ Logout Config
+            // ✅ Logout
             .logout(logout -> logout
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/") // optional redirect after logout
+                .logoutSuccessUrl("/")
+                .invalidateHttpSession(true)        // ← clears session on logout
+                .deleteCookies("JSESSIONID")        // ← cleans up cookie too
                 .permitAll()
             )
 
-            // ✅ Optional: Access Denied Page (403)
+            // ✅ Access denied page
             .exceptionHandling(ex -> ex
                 .accessDeniedPage("/403")
             );
@@ -92,8 +101,6 @@ public class SpringSecurity {
         return http.build();
     }
 
-
-    // Handiling Request accordingly
     @Bean
     public AuthenticationSuccessHandler authenticationSuccessHandler() {
         return new CustomAuthenticationSuccessHandler();
@@ -101,15 +108,22 @@ public class SpringSecurity {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+        auth.userDetailsService(userDetailsService)
+            .passwordEncoder(passwordEncoder());
     }
 
-    public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+    public class CustomAuthenticationSuccessHandler
+            implements AuthenticationSuccessHandler {
 
         @Override
-        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                Authentication authentication) throws IOException, ServletException {
-            if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+        public void onAuthenticationSuccess(
+                HttpServletRequest request,
+                HttpServletResponse response,
+                Authentication authentication)
+                throws IOException, ServletException {
+
+            if (authentication.getAuthorities()
+                    .contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
                 response.sendRedirect("/adminBusList");
             } else {
                 response.sendRedirect("/userBusList");
