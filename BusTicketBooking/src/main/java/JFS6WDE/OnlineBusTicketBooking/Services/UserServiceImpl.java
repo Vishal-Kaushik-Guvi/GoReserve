@@ -35,6 +35,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userDto.getEmail());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
+        // Ensure ROLE_USER exists
         Role userRole = roleRepository.findByName("ROLE_USER");
         if (userRole == null) {
             userRole = new Role();
@@ -42,6 +43,7 @@ public class UserServiceImpl implements UserService {
             roleRepository.save(userRole);
         }
 
+        // Ensure ROLE_ADMIN exists
         Role adminRole = roleRepository.findByName("ROLE_ADMIN");
         if (adminRole == null) {
             adminRole = new Role();
@@ -49,10 +51,11 @@ public class UserServiceImpl implements UserService {
             roleRepository.save(adminRole);
         }
 
-        user.setRoles(Arrays.asList(userRole));
-
-        if (userDto.getEmail().equalsIgnoreCase("admin@admin.com") && userDto.getPassword().equalsIgnoreCase("admin")) {
+        // Assign role based on email only  ✅
+        if (userDto.getEmail().equalsIgnoreCase("admin@goreserve.com")) {
             user.setRoles(Arrays.asList(adminRole));
+        } else {
+            user.setRoles(Arrays.asList(userRole));
         }
 
         userRepository.save(user);
@@ -73,11 +76,15 @@ public class UserServiceImpl implements UserService {
 
     private UserDto mapToUserDto(User user) {
         UserDto userDto = new UserDto();
-        String[] str = user.getName().split(" ");
+
+        String fullName = user.getName() != null ? user.getName().trim() : "";
+        String[] str = fullName.split(" ", 2);  // ✅ limit to 2 parts max
+
         userDto.setId(user.getId());
-        userDto.setFirstName(str[0]);
-        userDto.setLastName(str[1]);
+        userDto.setFirstName(str.length > 0 ? str[0] : "");
+        userDto.setLastName(str.length > 1 ? str[1] : "");  // ✅ safe fallback
         userDto.setEmail(user.getEmail());
+
         return userDto;
     }
 }

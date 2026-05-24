@@ -7,11 +7,8 @@
 
 /* ══════════════════════════════════════
    PAYMENT PAGE — GoReserve
-   Design: refined dark-panel premium,
-   Stripe/Razorpay inspired
 ══════════════════════════════════════ */
 
-/* ── TOP SHIMMER BAR ── */
 .pay-shimmer {
   height: 3px;
   background: linear-gradient(90deg,
@@ -25,7 +22,6 @@
   100% { background-position: -100% 0; }
 }
 
-/* ── PROGRESS BAR ── */
 .pay-steps {
   background: var(--ink);
   padding: 18px 0;
@@ -52,7 +48,6 @@
 .ps-line { width: 52px; height: 1px; background: rgba(255,255,255,.1); margin: 0 14px; flex-shrink:0; }
 .ps-line.done { background: var(--accent); opacity: .45; }
 
-/* ── PAGE SHELL ── */
 .pay-bg {
   background: var(--surface);
   position: relative;
@@ -76,7 +71,6 @@
   align-items: start;
 }
 
-/* ── PAGE TITLE (on dark bg) ── */
 .pay-heading {
   grid-column: 1 / -1;
   padding-bottom: 28px;
@@ -89,7 +83,6 @@
 }
 .pay-heading p { font-size: 13px; color: rgba(255,255,255,.4); }
 
-/* ── MAIN CARD ── */
 .pay-card {
   background: #fff;
   border-radius: 20px;
@@ -103,7 +96,6 @@
   to   { opacity:1; transform:translateY(0); }
 }
 
-/* ── CARD HEADER ── */
 .pay-card-head {
   padding: 22px 28px;
   border-bottom: 1px solid var(--border);
@@ -123,7 +115,6 @@
 }
 .pay-card-body { padding: 28px; }
 
-/* ── METHOD TABS ── */
 .method-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -154,7 +145,6 @@
 }
 .m-tab.active .m-tab-check { display: grid; }
 
-/* ── LIVE CARD VISUAL ── */
 .card3d-scene {
   perspective: 1200px;
   height: 190px;
@@ -168,7 +158,6 @@
   border-radius: 18px;
 }
 .card3d.flip { transform: rotateY(180deg); }
-
 .card3d-face {
   position: absolute; inset: 0;
   border-radius: 18px;
@@ -176,28 +165,17 @@
   -webkit-backface-visibility: hidden;
   overflow: hidden;
 }
-
-/* FRONT */
 .card3d-front {
   background: linear-gradient(135deg, #0d0d14 0%, #1a1a28 40%, #0a0f1e 100%);
   padding: 22px 26px;
   display: flex; flex-direction: column; justify-content: space-between;
 }
-/* Holographic shimmer overlay */
 .card3d-front::after {
   content: '';
   position: absolute; inset: 0;
-  background: linear-gradient(
-    125deg,
-    transparent 20%,
-    rgba(200,245,60,.04) 35%,
-    rgba(255,255,255,.06) 50%,
-    rgba(200,245,60,.03) 65%,
-    transparent 80%
-  );
+  background: linear-gradient(125deg, transparent 20%, rgba(200,245,60,.04) 35%, rgba(255,255,255,.06) 50%, rgba(200,245,60,.03) 65%, transparent 80%);
   pointer-events: none;
 }
-/* Radial glow top-right */
 .card3d-front::before {
   content: '';
   position: absolute; top: -60px; right: -60px;
@@ -214,14 +192,8 @@
 .card3d-chip::after {
   content: '';
   position: absolute; inset: 0;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 9px,
-    rgba(0,0,0,.12) 9px, rgba(0,0,0,.12) 10px
-  ),
-  repeating-linear-gradient(
-    90deg, transparent, transparent 9px,
-    rgba(0,0,0,.12) 9px, rgba(0,0,0,.12) 10px
-  );
+  background: repeating-linear-gradient(0deg, transparent, transparent 9px, rgba(0,0,0,.12) 9px, rgba(0,0,0,.12) 10px),
+  repeating-linear-gradient(90deg, transparent, transparent 9px, rgba(0,0,0,.12) 9px, rgba(0,0,0,.12) 10px);
 }
 .card-brand-logo {
   font-family: 'Space Mono', monospace;
@@ -244,8 +216,6 @@
 .card3d-info-group { display: flex; flex-direction: column; gap: 2px; }
 .card3d-info-label { font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.4); }
 .card3d-info-val   { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 600; color: #fff; letter-spacing: 1px; }
-
-/* BACK */
 .card3d-back {
   background: linear-gradient(135deg, #1a1a28 0%, #0d0d14 100%);
   transform: rotateY(180deg);
@@ -262,10 +232,7 @@
 }
 .card3d-sig {
   flex: 1; height: 38px; border-radius: 5px;
-  background: repeating-linear-gradient(
-    -50deg, #f5f5f5 0px, #f5f5f5 8px,
-    #e8e8e8 8px, #e8e8e8 16px
-  );
+  background: repeating-linear-gradient(-50deg, #f5f5f5 0px, #f5f5f5 8px, #e8e8e8 8px, #e8e8e8 16px);
   display: flex; align-items: center; justify-content: flex-end; padding-right: 12px;
 }
 .card3d-cvv-num {
@@ -274,10 +241,8 @@
 }
 .card3d-cvv-label { font-size: 11px; color: rgba(255,255,255,.4); white-space: nowrap; }
 
-/* ── FORM FIELDS ── */
 .f-group  { margin-bottom: 18px; }
 .f-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
-.f-row-3  { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; margin-bottom: 18px; }
 .f-field  { display: flex; flex-direction: column; gap: 6px; }
 .f-field label {
   font-size: 10.5px; font-weight: 700; letter-spacing: .07em;
@@ -299,7 +264,6 @@
   box-shadow: 0 0 0 3px rgba(200,245,60,.13);
 }
 
-/* ── UPI PANEL ── */
 .upi-panel  { display: none; }
 .upi-panel.show { display: block; }
 .card-panel { display: none; }
@@ -321,7 +285,6 @@
 .upi-app.sel   { border-color: var(--accent); background: rgba(200,245,60,.05); color: var(--ink); }
 .upi-app-img   { font-size: 26px; line-height:1; }
 
-/* QR code area */
 .upi-qr-block {
   border: 1.5px dashed var(--border);
   border-radius: 14px; padding: 22px;
@@ -343,14 +306,12 @@
   margin: 6px 0;
 }
 
-/* OR divider */
 .or-div {
   display: flex; align-items: center; gap: 12px;
   margin: 18px 0; color: var(--mid); font-size: 12px;
 }
 .or-div::before, .or-div::after { content:''; flex:1; height:1px; background:var(--border); }
 
-/* ── PAY BUTTON ── */
 .btn-pay {
   width: 100%; background: var(--accent); color: var(--ink);
   font-family: 'Space Mono', monospace;
@@ -375,7 +336,6 @@
   font-size: 11px; color: var(--mid); margin-top: 10px;
 }
 
-/* ── ERROR ── */
 .pay-error {
   background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.25);
   color: #dc2626; padding: 12px 16px; border-radius: 10px;
@@ -383,7 +343,6 @@
   margin-bottom: 20px; animation: slideUp .3s ease both;
 }
 
-/* ── CANCEL ── */
 .cancel-link {
   display: inline-flex; align-items: center; gap: 7px;
   color: var(--mid); font-size: 13px; text-decoration: none;
@@ -397,7 +356,6 @@
 ══════════════════════ */
 .pay-sidebar { position: sticky; top: 76px; }
 
-/* Order card */
 .order-card {
   background: var(--ink); border-radius: 18px; padding: 26px;
   overflow: hidden; position: relative;
@@ -428,7 +386,6 @@
   margin-bottom: 20px;
 }
 .oc-route-arrow { color: var(--accent); font-size: 16px; }
-
 .oc-rows {
   border-top: 1px solid rgba(255,255,255,.07);
   padding-top: 16px; display: flex; flex-direction: column; gap: 11px;
@@ -436,14 +393,11 @@
 .oc-row { display: flex; justify-content: space-between; align-items: center; }
 .oc-row-lbl { font-size: 12px; color: rgba(255,255,255,.38); }
 .oc-row-val { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: #fff; }
-
 .oc-divider { height: 1px; background: rgba(255,255,255,.07); margin: 12px 0; }
-
 .oc-total { display: flex; justify-content: space-between; align-items: center; }
 .oc-total-lbl { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .05em; }
 .oc-total-val { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1; }
 
-/* Trust block */
 .trust-card {
   background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px;
   animation: slideUp .45s .2s cubic-bezier(.22,.68,0,1.2) both;
@@ -458,7 +412,6 @@
 .trust-text-title { font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 1px; }
 .trust-text-sub   { font-size: 11px; color: var(--mid); line-height: 1.5; }
 
-/* Brand logos row */
 .brand-logos {
   display: flex; align-items: center; justify-content: center;
   gap: 12px; margin-top: 14px; padding-top: 14px;
@@ -470,6 +423,151 @@
   border-radius: 8px; padding: 5px 12px;
   font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
   color: var(--mid);
+}
+
+/* ══════════════════════════════════════
+   PROCESSING MODAL
+══════════════════════════════════════ */
+.proc-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.78);
+  z-index: 9999;
+  display: none;
+  place-items: center;
+  padding: 20px;
+}
+.proc-overlay.open { display: grid; }
+
+.proc-box {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%; max-width: 420px;
+  overflow: hidden;
+  animation: slideUp .4s cubic-bezier(.22,.68,0,1.2) both;
+}
+
+.proc-header {
+  background: var(--ink);
+  padding: 20px 24px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+}
+.proc-header-left { display: flex; align-items: center; gap: 12px; }
+.proc-brand-icon {
+  width: 38px; height: 38px;
+  background: var(--accent);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.proc-header-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 14px; font-weight: 700; color: #fff;
+}
+.proc-header-sub { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 1px; }
+.proc-header-amount {
+  font-family: 'Space Mono', monospace;
+  font-size: 22px; font-weight: 700;
+  color: var(--accent);
+}
+
+.proc-body { padding: 28px 24px 24px; }
+
+.proc-spinner-wrap {
+  display: flex; justify-content: center; margin-bottom: 20px;
+}
+.proc-spinner {
+  width: 58px; height: 58px; border-radius: 50%;
+  border: 3px solid rgba(10,10,15,.08);
+  border-top-color: var(--accent);
+  animation: procSpin .75s linear infinite;
+}
+@keyframes procSpin { to { transform: rotate(360deg); } }
+
+.proc-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 15px; font-weight: 700;
+  color: var(--ink); text-align: center; margin-bottom: 5px;
+  transition: opacity .3s;
+}
+.proc-sub {
+  font-size: 12px; color: var(--mid);
+  text-align: center; margin-bottom: 24px;
+}
+
+.proc-steps { display: flex; flex-direction: column; gap: 0; }
+.proc-step {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; color: rgba(10,10,15,.3);
+  transition: color .35s;
+}
+.proc-step:last-child { border-bottom: none; padding-bottom: 0; }
+.proc-step-icon {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(10,10,15,.04);
+  border: 1.5px solid rgba(10,10,15,.08);
+  display: grid; place-items: center;
+  font-size: 13px; flex-shrink: 0;
+  transition: all .35s;
+}
+.proc-step.active { color: var(--ink); font-weight: 600; }
+.proc-step.active .proc-step-icon {
+  background: rgba(200,245,60,.15);
+  border-color: var(--accent);
+}
+.proc-step.done { color: #15803d; }
+.proc-step.done .proc-step-icon {
+  background: rgba(22,163,74,.1);
+  border-color: rgba(22,163,74,.4);
+}
+
+/* success screen inside modal */
+.proc-success {
+  display: none;
+  flex-direction: column; align-items: center;
+  text-align: center; padding: 32px 24px 28px;
+}
+.proc-success.show { display: flex; }
+
+.proc-success-ring {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(22,163,74,.1);
+  border: 2px solid rgba(22,163,74,.3);
+  display: grid; place-items: center;
+  font-size: 32px;
+  margin-bottom: 18px;
+  animation: successPop .5s cubic-bezier(.22,.68,0,1.6) both;
+}
+@keyframes successPop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.proc-success-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 6px;
+}
+.proc-success-sub { font-size: 13px; color: var(--mid); margin-bottom: 6px; }
+.proc-txn-id {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; color: var(--mid);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 5px 14px; border-radius: 8px;
+  margin-bottom: 22px;
+}
+.proc-redirect-note {
+  font-size: 12px; color: var(--mid);
+  display: flex; align-items: center; gap: 6px;
+}
+.proc-redirect-dots { letter-spacing: 3px; animation: dots 1.2s steps(3,end) infinite; }
+@keyframes dots {
+  0%   { content: '.'; }
+  33%  { content: '..'; }
+  66%  { content: '...'; }
+  100% { content: ''; }
 }
 
 /* ── DARK MODE ── */
@@ -501,6 +599,13 @@
 .dark .brand-logos       { border-color: rgba(255,255,255,.07); }
 .dark .ssl-pill          { background: rgba(22,163,74,.1); border-color: rgba(22,163,74,.25); }
 .dark .pay-bg::before    { background: #0d0d14; }
+.dark .proc-box          { background: #16161e; }
+.dark .proc-title        { color: #fff; }
+.dark .proc-step         { border-color: rgba(255,255,255,.07); color: rgba(255,255,255,.25); }
+.dark .proc-step.active  { color: #fff; }
+.dark .proc-step-icon    { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); }
+.dark .proc-success-title { color: #fff; }
+.dark .proc-txn-id       { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); }
 
 /* ── RESPONSIVE ── */
 @media (max-width:920px) {
@@ -511,14 +616,78 @@
 }
 @media (max-width:600px) {
   .pay-wrap { padding: 20px 16px 60px; }
-  .f-row, .f-row-3 { grid-template-columns: 1fr; }
+  .f-row { grid-template-columns: 1fr; }
   .upi-apps { grid-template-columns: repeat(2,1fr); }
   .ps-lbl { display: none; }
   .pay-heading h1 { font-size: 22px; }
   .method-tabs { grid-template-columns: 1fr 1fr; }
 }
-
 </style>
+
+<!-- ══════════════════════
+     PROCESSING MODAL
+     Sits outside page flow
+══════════════════════ -->
+<div class="proc-overlay" id="procOverlay">
+  <div class="proc-box">
+
+    <!-- Header -->
+    <div class="proc-header">
+      <div class="proc-header-left">
+        <div class="proc-brand-icon">🚌</div>
+        <div>
+          <div class="proc-header-title">GoReserve Pay</div>
+          <div class="proc-header-sub">Secure payment gateway</div>
+        </div>
+      </div>
+      <div class="proc-header-amount">
+        ₹<span id="procAmount">0</span>
+      </div>
+    </div>
+
+    <!-- Processing view -->
+    <div id="procProcessing">
+      <div class="proc-body">
+        <div class="proc-spinner-wrap">
+          <div class="proc-spinner"></div>
+        </div>
+        <div class="proc-title" id="procTitle">Initiating payment…</div>
+        <div class="proc-sub">Please do not close or refresh this window</div>
+        <div class="proc-steps">
+          <div class="proc-step" id="pStep1">
+            <div class="proc-step-icon">🔗</div>
+            <span>Connecting to payment server</span>
+          </div>
+          <div class="proc-step" id="pStep2">
+            <div class="proc-step-icon">🛡️</div>
+            <span>Verifying payment details</span>
+          </div>
+          <div class="proc-step" id="pStep3">
+            <div class="proc-step-icon">🏦</div>
+            <span>Contacting your bank</span>
+          </div>
+          <div class="proc-step" id="pStep4">
+            <div class="proc-step-icon">✅</div>
+            <span>Confirming transaction</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success view (shown after animation) -->
+    <div class="proc-success" id="procSuccess">
+      <div class="proc-success-ring">✓</div>
+      <div class="proc-success-title">Payment Successful!</div>
+      <div class="proc-success-sub" id="procSuccessSub">Payment confirmed</div>
+      <div class="proc-txn-id" id="procTxnId">TXN • generating…</div>
+      <div class="proc-redirect-note">
+        Redirecting to your boarding pass
+        <span class="proc-redirect-dots">...</span>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- Shimmer bar -->
 <div class="pay-shimmer"></div>
@@ -549,7 +718,6 @@
 <div class="pay-bg">
   <div class="pay-wrap">
 
-    <!-- Heading (on dark strip) -->
     <div class="pay-heading">
       <h1>Complete Your Payment</h1>
       <p>Secure checkout · Your information is encrypted</p>
@@ -565,13 +733,11 @@
 
         <div class="pay-card-body">
 
-          <!-- Error -->
           <div th:if="${error}" class="pay-error">
             <span>⚠️</span>
             <span th:text="${error}">Payment failed. Please try again.</span>
           </div>
 
-          <!-- Method tabs -->
           <div class="method-tabs">
             <div class="m-tab active" id="tab-card" onclick="switchMethod('card')">
               <span class="m-tab-icon">💳</span>
@@ -590,13 +756,10 @@
           <form th:action="@{/bookings/payment(bookingId=${booking.id})}"
                 method="post" th:object="${paymentDto}" id="payForm">
 
-            <!-- ── CARD PANEL ── -->
             <div class="card-panel show" id="cardPanel">
 
-              <!-- Live card visual -->
               <div class="card3d-scene">
                 <div class="card3d" id="card3d">
-                  <!-- FRONT -->
                   <div class="card3d-face card3d-front">
                     <div class="card3d-top">
                       <div class="card3d-chip"></div>
@@ -614,7 +777,6 @@
                       </div>
                     </div>
                   </div>
-                  <!-- BACK -->
                   <div class="card3d-face card3d-back">
                     <div class="card3d-mag"></div>
                     <div class="card3d-cvv-row">
@@ -627,7 +789,6 @@
                 </div>
               </div>
 
-              <!-- Card number -->
               <div class="f-group">
                 <div class="f-field">
                   <label for="cardNumber">Card Number</label>
@@ -638,7 +799,6 @@
                 </div>
               </div>
 
-              <!-- Holder -->
               <div class="f-group">
                 <div class="f-field">
                   <label for="cardHolder">Name on Card</label>
@@ -649,7 +809,6 @@
                 </div>
               </div>
 
-              <!-- Expiry + CVV -->
               <div class="f-row">
                 <div class="f-field">
                   <label for="cardExpiry">Expiry Date</label>
@@ -669,13 +828,11 @@
                 </div>
               </div>
 
-              <input type="hidden" name="paymentMode" value="CARD" id="modeCard" />
+              <input type="hidden" name="paymentMode" value="CARD" />
             </div>
 
-            <!-- ── UPI PANEL ── -->
+            <!-- UPI PANEL -->
             <div class="upi-panel" id="upiPanel">
-
-              <!-- App shortcuts -->
               <div class="upi-apps">
                 <div class="upi-app" onclick="pickUpi(this,'gpay')">
                   <span class="upi-app-img">🟢</span>Google Pay
@@ -691,7 +848,6 @@
                 </div>
               </div>
 
-              <!-- Fake QR -->
               <div class="upi-qr-block" id="upiQr">
                 <div class="qr-grid" id="qrGrid"></div>
                 <div class="upi-qr-label">Scan with any UPI app</div>
@@ -710,8 +866,9 @@
               <input type="hidden" name="paymentMode" value="UPI" id="modeUpi" />
             </div>
 
-            <!-- PAY BUTTON -->
-            <button type="submit" class="btn-pay" id="payBtn">
+            <!-- PAY BUTTON — intercepted by JS -->
+            <button type="button" class="btn-pay" id="payBtn"
+                    th:attr="data-fare=${booking.fare}">
               🔒&nbsp; Pay ₹<span th:text="${booking.fare}">0</span> Now
             </button>
             <p class="pay-footnote">
@@ -729,8 +886,6 @@
 
     <!-- ════ RIGHT SIDEBAR ════ -->
     <div class="pay-sidebar">
-
-      <!-- Order Summary -->
       <div class="order-card">
         <div class="oc-label">Order Summary</div>
         <div class="oc-booking-id">
@@ -776,7 +931,6 @@
         </div>
       </div>
 
-      <!-- Trust / Security -->
       <div class="trust-card">
         <div class="trust-card-title">Why GoReserve Pay is safe</div>
         <div class="trust-row">
@@ -814,8 +968,8 @@
           <span class="brand-logo-chip">UPI</span>
         </div>
       </div>
-
     </div>
+
   </div>
 </div>
 
@@ -836,15 +990,12 @@
     el.classList.add('sel');
     const placeholders = { gpay:'yourname@okaxis', phonepe:'yourname@ybl', paytm:'yourname@paytm', other:'yourname@upi' };
     document.getElementById('upiId').placeholder = placeholders[app] || 'yourname@upi';
-
-    // Show QR
     const qrEl = document.getElementById('upiQr');
     qrEl.classList.add('show');
     generateQr();
     startQrTimer();
   }
 
-  /* ── Fake QR generator ── */
   function generateQr() {
     const grid = document.getElementById('qrGrid');
     grid.innerHTML = '';
@@ -867,7 +1018,6 @@
     });
   }
 
-  /* ── QR countdown ── */
   function startQrTimer() {
     if (qrInterval) clearInterval(qrInterval);
     let secs = 299;
@@ -881,17 +1031,12 @@
     }, 1000);
   }
 
-  /* ── Card number format + brand detect ── */
   function onCardNum(input) {
-    // Strip all non-digits, cap at 16
     let v = input.value.replace(/\D/g, '').slice(0, 16);
-    // Format with single space every 4 digits → max 19 chars (16 + 3 spaces)
     input.value = v.replace(/(.{4})(?=.)/g, '$1 ');
-    // Display on card: pad to 16 with bullets, group with spaces
     const padded = v.padEnd(16, '•');
     document.getElementById('cNumber').textContent =
       padded.slice(0,4) + '  ' + padded.slice(4,8) + '  ' + padded.slice(8,12) + '  ' + padded.slice(12,16);
-    // Brand detection
     const first2 = v.slice(0, 2);
     const brand = v[0] === '4' ? 'VISA'
       : v[0] === '5' ? 'MASTERCARD'
@@ -901,12 +1046,70 @@
     document.getElementById('cBrand').textContent = brand;
   }
 
-  /* ── Expiry format ── */
   function onExpiry(input) {
     let v = input.value.replace(/\D/g,'').slice(0,4);
     if (v.length >= 3) v = v.slice(0,2) + ' / ' + v.slice(2);
     input.value = v;
     document.getElementById('cExpiry').textContent = v || 'MM / YY';
+  }
+
+  /* ══════════════════════════════════════
+     PAYMENT PROCESSING MODAL
+  ══════════════════════════════════════ */
+  document.getElementById('payBtn').addEventListener('click', function() {
+    const fare = this.getAttribute('data-fare') || '0';
+    document.getElementById('procAmount').textContent = fare;
+    document.getElementById('procOverlay').classList.add('open');
+    runPaymentSteps();
+  });
+
+  function runPaymentSteps() {
+    const steps = [
+      { id: 'pStep1', label: 'Connecting to server…',   delay: 900  },
+      { id: 'pStep2', label: 'Verifying details…',      delay: 1000 },
+      { id: 'pStep3', label: 'Contacting your bank…',   delay: 1200 },
+      { id: 'pStep4', label: 'Confirming transaction…', delay: 900  },
+    ];
+
+    let i = 0;
+    const titleEl = document.getElementById('procTitle');
+
+    function next() {
+      if (i > 0) {
+        const prev = document.getElementById(steps[i-1].id);
+        prev.classList.remove('active');
+        prev.classList.add('done');
+        prev.querySelector('.proc-step-icon').textContent = '✓';
+      }
+      if (i < steps.length) {
+        const cur = document.getElementById(steps[i].id);
+        cur.classList.add('active');
+        titleEl.textContent = steps[i].label;
+        const d = steps[i].delay + Math.random() * 300;
+        i++;
+        setTimeout(next, d);
+      } else {
+        setTimeout(showSuccess, 500);
+      }
+    }
+    next();
+  }
+
+  function showSuccess() {
+    document.getElementById('procProcessing').style.display = 'none';
+    const successEl = document.getElementById('procSuccess');
+    successEl.classList.add('show');
+
+    const fare = document.getElementById('procAmount').textContent;
+    document.getElementById('procSuccessSub').textContent = '₹' + fare + ' paid successfully';
+
+    const txn = 'TXN' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,6).toUpperCase();
+    document.getElementById('procTxnId').textContent = 'Transaction ID: ' + txn;
+
+    // Submit the actual Spring form after 2.2 seconds
+    setTimeout(() => {
+      document.getElementById('payForm').submit();
+    }, 2200);
   }
 </script>
 

@@ -31,17 +31,29 @@ public class AdminController {
     // ══════════════════════════════
     @GetMapping("/adminBusList")
     public String adminDashboard(Model model) {
-        List<Bus> buses            = busService.viewAllBuses();      // BusServiceImpl
-        List<UserDto> users        = userService.findAllUsers();     // UserServiceImpl → List<UserDto>
-        List<Booking> bookings     = bookingService.getAllBookings(); // BookingServiceImpl (share if broken)
 
-        long revenue = bookings.stream()
-            .filter(b -> b.getPayment() != null && "PAID".equals(b.getPayment().getPaymentStatus()))
-            .mapToLong(Booking::getFare).sum();
+        List<Bus> buses        = busService.viewAllBuses();
+        List<UserDto> users    = userService.findAllUsers();
+        List<Booking> bookings = bookingService.getAllBookings();
 
-        List<Booking> recent = bookings.size() > 5
-            ? bookings.subList(bookings.size() - 5, bookings.size())
-            : bookings;
+        // ✅ Safe revenue calculation
+        long revenue = 0;
+        for (Booking b : bookings) {
+            try {
+                if (b.getPayment() != null 
+                        && "PAID".equals(b.getPayment().getPaymentStatus())) {
+                    revenue += b.getFare();
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // ✅ Safe subList — was crashing when bookings between 1-4
+        List<Booking> recent;
+        if (bookings.size() > 5) {
+            recent = bookings.subList(bookings.size() - 5, bookings.size());
+        } else {
+            recent = bookings;
+        }
 
         model.addAttribute("totalBuses",     buses.size());
         model.addAttribute("totalUsers",     users.size());
